@@ -27,14 +27,15 @@ class NfcThread(threading.Thread):
 		stores it into uidQueue for later authentication check.
 		"""
 		self.nfc = NFCDevice()
-		try:
-			uid_hex = hexlify(self.nfc.scanUID())
-			print uid_hex
-			logging.info("Got UID %s" % uid_hex)
-			self.uidQueue.put(uid_hex)
-		except NFCError, e:
-			logging.warn("Failed to wait for RFID card", e)
-			
+		while True:
+			try:
+				uid_hex = hexlify(self.nfc.scanUID())
+				print uid_hex
+				logging.info("Got UID %s" % uid_hex)
+				self.uidQueue.put(uid_hex)
+			except NFCError, e:
+				logging.warn("Failed to wait for RFID card", e)
+				
 
 class UnlockThread(threading.Thread):
 	"""Thread checking UIDs whether they are authorized"""
