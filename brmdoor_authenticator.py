@@ -21,7 +21,8 @@ class UidRecord(object):
 		return "(uid: %s, nick: %s)" % (self.uid_hex, self.nick)
 	
 	def __repr__(self):
-		return "<UidRecord: uid: %s, nick: %s>" % (self.uid_hex, self.nick)
+		return "<UidRecord: uid: %s, nick: %s>" % \
+			(repr(self.uid_hex), repr(self.nick))
 
 class UidAuthenticator(object):
 	"""Checks UIDs of ISO14443 RFID cards against database."""
@@ -65,12 +66,12 @@ if __name__ == "__main__":
 	authenticator = UidAuthenticator("test_uids_db.sqlite")
 	
 	record = authenticator.fetchUidRecord("043a1482cc2280")
-	print "For UID 043a1482cc2280 we found:", str(record)
+	print "For UID 043a1482cc2280 we found:", repr(record)
 	
 	record = authenticator.fetchUidRecord("34795fad")
-	print "For UID 34795fad we found:", str(record)
+	print "For UID 34795fad we found:", repr(record)
 	
 	record = authenticator.fetchUidRecord("01020304")
-	print "For UID 01020304 we found:", str(record)
+	print "For UID 01020304 we found:", repr(record)
 	
 	authenticator.shutdown()
