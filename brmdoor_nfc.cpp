@@ -64,6 +64,7 @@ std::string NFCDevice::scanUID() throw(NFCError)
 {
     int res;
     nfc_target nt;
+    string uid;
 
     if (!opened()) {
         throw NFCError("NFC device not opened");
@@ -76,12 +77,15 @@ std::string NFCDevice::scanUID() throw(NFCError)
 
     // we are not interested in non-ISO-14443A cards
     if (nt.nm.nmt != NMT_ISO14443A) {
-        return "";
+        return string();
     }
 
     const nfc_iso14443a_info& nai = nt.nti.nai;
+    uid = string((const char*)nai.abtUid, nai.szUidLen);
 
-    return string((const char*)nai.abtUid, nai.szUidLen);
+    nfc_initiator_deselect_target(_nfcDevice);
+
+    return uid;
 }
 
 const nfc_modulation NFCDevice::_modulations[5] = {
