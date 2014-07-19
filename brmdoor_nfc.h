@@ -2,6 +2,7 @@
 
 #include <string>
 #include <inttypes.h>
+#include <stdexcept>
 
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
@@ -13,7 +14,7 @@ public:
     
     NFCDevice();
     
-    ~NFCDevice() {}
+    virtual ~NFCDevice();
 
     std::string scanUID();
 
@@ -24,6 +25,29 @@ public:
 protected:
 
     static const nfc_modulation _modulations[5];    
+
     static const size_t _modulationsLen = 5;
 
+    nfc_context *_nfcContext;
+
+    nfc_device *_nfcDevice;
+
 };
+
+
+class NFCError: public std::exception
+{
+
+public:
+
+    NFCError(const std::string& msg);
+    
+    const char *what() const throw() {return _msg.c_str();}
+
+    ~NFCError() throw() {}
+
+protected:
+
+    std::string _msg;
+};
+

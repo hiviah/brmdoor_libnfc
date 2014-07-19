@@ -12,6 +12,30 @@ NFCDevice::NFCDevice()
 {
     pollNr = 20;
     pollPeriod = 2;
+
+    _nfcContext = NULL;
+
+    nfc_init(&_nfcContext);
+    if (_nfcContext == NULL) {
+        throw NFCError("Unable to init libnfc (malloc)");
+    }
+
+    _nfcDevice = nfc_open(_nfcContext, NULL);
+
+    if (_nfcDevice == NULL) {
+        throw NFCError("Unable to open NFC device.");
+    }
+
+    if (nfc_initiator_init(_nfcDevice) < 0) {
+        nfc_close(_nfcDevice);
+        throw NFCError("NFC initiator error");
+    }
+
+}
+
+NFCDevice::~NFCDevice()
+{
+    nfc_exit(_nfcContext);
 }
 
 std::string NFCDevice::scanUID()
@@ -30,3 +54,7 @@ const nfc_modulation NFCDevice::_modulations[5] = {
 const size_t _modulationsLen = 5;
 
 
+NFCError::NFCError(const std::string& msg)
+{
+    _msg = msg;
+}
