@@ -41,12 +41,12 @@ void NFCDevice::open()
         throw NFCError("Unable to open NFC device.");
     }
 
+    _opened = true;
+
     if (nfc_initiator_init(_nfcDevice) < 0) {
         close();
         throw NFCError("NFC initiator error");
     }
-
-    _opened = true;
 }
 
 void NFCDevice::close()
