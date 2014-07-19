@@ -8,7 +8,7 @@
 
 using namespace std;
 
-NFCDevice::NFCDevice():
+NFCDevice::NFCDevice() throw(NFCError):
     pollNr(20),
     pollPeriod(2),
     _nfcContext(NULL),
@@ -29,7 +29,7 @@ NFCDevice::~NFCDevice()
     nfc_exit(_nfcContext);
 }
 
-void NFCDevice::open()
+void NFCDevice::open() throw(NFCError)
 {
     if (opened()) {
         return;
@@ -60,7 +60,7 @@ void NFCDevice::close()
     _opened = false;
 }
 
-std::string NFCDevice::scanUID()
+std::string NFCDevice::scanUID() throw(NFCError)
 {
     int res;
     nfc_target nt;

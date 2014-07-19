@@ -7,18 +7,34 @@
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
 
+class NFCError: public std::exception
+{
+
+public:
+
+    NFCError(const std::string& msg);
+    
+    const char *what() const throw() {return _msg.c_str();}
+
+    ~NFCError() throw() {}
+
+protected:
+
+    std::string _msg;
+};
+
 class NFCDevice
 {
 
 public:
     
-    NFCDevice();
+    NFCDevice() throw(NFCError);
     
     virtual ~NFCDevice();
 
-    std::string scanUID();
+    std::string scanUID() throw(NFCError);
 
-    void open();
+    void open() throw(NFCError);
 
     bool opened() const {return _opened;}
 
@@ -42,20 +58,4 @@ protected:
 
 };
 
-
-class NFCError: public std::exception
-{
-
-public:
-
-    NFCError(const std::string& msg);
-    
-    const char *what() const throw() {return _msg.c_str();}
-
-    ~NFCError() throw() {}
-
-protected:
-
-    std::string _msg;
-};
 
