@@ -9,3 +9,10 @@ brmdoor_nfc.py
 tags
 .gdb_history
 doc
+
+#Qt Creator files
+brmdoor_libnfc.config
+brmdoor_libnfc.creator
+brmdoor_libnfc.files
+brmdoor_libnfc.includes
+
