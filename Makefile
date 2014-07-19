@@ -1,6 +1,7 @@
 CXXFLAGS += -Wall -g -I /usr/include/python2.6/ -fPIC
 LDFLAGS += -lnfc
 OBJECTS = brmdoor_nfc.o brmdoor_nfc_wrap.o
+SWIG_GENERATED = brmdoor_nfc_wrap.cxx
 PY_MODULE = _brmdoor_nfc.so
 
 all: $(PY_MODULE)
@@ -18,4 +19,4 @@ brmdoor_nfc_wrap.cxx: brmdoor_nfc.i brmdoor_nfc.h
 	swig -python -c++ $<
 
 clean:
-	rm -f $(OBJECTS) $(PY_MODULE)
+	rm -f $(OBJECTS) $(PY_MODULE) $(SWIG_GENERATED)
