@@ -14,7 +14,7 @@ brmdoor_nfc.o: brmdoor_nfc.cpp brmdoor_nfc.h
 brmdoor_nfc_wrap.o: brmdoor_nfc_wrap.cxx
 	g++ -c $(CXXFLAGS) $<
 
-brmdoor_nfc_wrap.cxx: brmdoor_nfc.i
+brmdoor_nfc_wrap.cxx: brmdoor_nfc.i brmdoor_nfc.h
 	swig -python -c++ $<
 
 clean:
