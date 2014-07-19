@@ -1,4 +1,5 @@
-CXXFLAGS += -Wall -g -I /usr/include/python2.6/ -fPIC
+PYTHON_INCLUDES := $(shell python-config --includes)
+CXXFLAGS += -Wall -g $(PYTHON_INCLUDES) -fPIC
 LDFLAGS += -lnfc
 OBJECTS = brmdoor_nfc.o brmdoor_nfc_wrap.o
 SWIG_GENERATED = brmdoor_nfc_wrap.cxx brmdoor_nfc.py
