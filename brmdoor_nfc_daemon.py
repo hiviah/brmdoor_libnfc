@@ -30,7 +30,6 @@ class NfcThread(threading.Thread):
 		while True:
 			try:
 				uid_hex = hexlify(self.nfc.scanUID())
-				print uid_hex
 				logging.info("Got UID %s" % uid_hex)
 				self.uidQueue.put(uid_hex)
 			except NFCError, e:
