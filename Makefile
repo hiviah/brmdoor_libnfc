@@ -20,3 +20,6 @@ brmdoor_nfc_wrap.cxx: brmdoor_nfc.i brmdoor_nfc.h
 
 clean:
 	rm -f $(OBJECTS) $(PY_MODULE) $(SWIG_GENERATED)
+
+doxygen:
+	doxygen Doxyfile
