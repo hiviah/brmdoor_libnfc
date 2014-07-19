@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import threading
 import Queue
 import logging
@@ -17,7 +18,6 @@ class NfcThread(threading.Thread):
 	def __init__(self, uidQueue):
 		"""Create thread reading UIDs from PN53x reader.
 		"""
-		self.nfc = NFCDevice()
 		self.uidQueue = uidQueue
 		threading.Thread.__init__(self)
 
@@ -26,8 +26,10 @@ class NfcThread(threading.Thread):
 		Waits for a card to get into reader field. Reads its UID and
 		stores it into uidQueue for later authentication check.
 		"""
+		self.nfc = NFCDevice()
 		try:
 			uid_hex = hexlify(self.nfc.scanUID())
+			print uid_hex
 			logging.info("Got UID %s" % uid_hex)
 			self.uidQueue.put(uid_hex)
 		except NFCError, e:
@@ -63,6 +65,9 @@ class UnlockThread(threading.Thread):
 				logging.info("Unlocking for %s", record)
 
 if __name__  == "__main__":
+	logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
+		format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
+	
 	uidQueue = Queue.Queue(512)
 	#TODO use SafeConfigParser to get actual config data
 	
