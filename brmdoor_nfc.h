@@ -18,6 +18,12 @@ public:
 
     std::string scanUID();
 
+    void open();
+
+    bool opened() const {return _opened;}
+
+    void close();
+
     uint8_t pollNr;
 
     uint8_t pollPeriod;
@@ -31,6 +37,8 @@ protected:
     nfc_context *_nfcContext;
 
     nfc_device *_nfcDevice;
+
+    bool _opened;
 
 };
 

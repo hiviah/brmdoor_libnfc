@@ -8,16 +8,31 @@
 
 using namespace std;
 
-NFCDevice::NFCDevice()
+NFCDevice::NFCDevice():
+    pollNr(20),
+    pollPeriod(2),
+    _nfcContext(NULL),
+    _nfcDevice(NULL),
+    _opened(false)
 {
-    pollNr = 20;
-    pollPeriod = 2;
-
-    _nfcContext = NULL;
-
     nfc_init(&_nfcContext);
     if (_nfcContext == NULL) {
         throw NFCError("Unable to init libnfc (malloc)");
+    }
+
+    open();
+}
+
+NFCDevice::~NFCDevice()
+{
+    close();
+    nfc_exit(_nfcContext);
+}
+
+void NFCDevice::open()
+{
+    if (opened()) {
+        return;
     }
 
     _nfcDevice = nfc_open(_nfcContext, NULL);
@@ -27,16 +42,22 @@ NFCDevice::NFCDevice()
     }
 
     if (nfc_initiator_init(_nfcDevice) < 0) {
-        nfc_close(_nfcDevice);
+        close();
         throw NFCError("NFC initiator error");
     }
 
+    _opened = true;
 }
 
-NFCDevice::~NFCDevice()
+void NFCDevice::close()
 {
-    //nfc_close(_nfcDevice);
-    nfc_exit(_nfcContext);
+    if (!opened()) {
+        return;
+    }
+
+    nfc_close(_nfcDevice);
+    _nfcDevice = NULL;
+    _opened = false;
 }
 
 std::string NFCDevice::scanUID()
