@@ -92,10 +92,10 @@ public:
 protected:
 
     /** Modulations that specify cards accepted by reader */
-    static const nfc_modulation _modulations[5];    
+    static const nfc_modulation _modulations[5];
 
     /** Number of modulations in _modulations array */
-    static const size_t _modulationsLen = 5;
+    static const size_t _modulationsLen;
 
     /** libnfc-specific opaque context */
     nfc_context *_nfcContext;

@@ -85,14 +85,14 @@ std::string NFCDevice::scanUID() throw(NFCError)
 }
 
 const nfc_modulation NFCDevice::_modulations[5] = {
-        { /*.nmt = */ NMT_ISO14443A, /* .nbr = */ NBR_106 },
-        { /*.nmt = */ NMT_ISO14443B, /* .nbr = */ NBR_106 },
-        { /*.nmt = */ NMT_FELICA,    /* .nbr = */ NBR_212 },
-        { /*.nmt = */ NMT_FELICA,    /* .nbr = */ NBR_424 },
-        { /*.nmt = */ NMT_JEWEL,     /* .nbr = */ NBR_106 },
+        { /*.nmt = */ NMT_ISO14443A, /* .nbr = */ NBR_106 }
+        //{ /*.nmt = */ NMT_ISO14443B, /* .nbr = */ NBR_106 },
+        //{ /*.nmt = */ NMT_FELICA,    /* .nbr = */ NBR_212 },
+        //{ /*.nmt = */ NMT_FELICA,    /* .nbr = */ NBR_424 },
+        //{ /*.nmt = */ NMT_JEWEL,     /* .nbr = */ NBR_106 },
     };
     
-const size_t _modulationsLen = 5;
+const size_t NFCDevice::_modulationsLen = 1;
 
 
 NFCError::NFCError(const std::string& msg)
