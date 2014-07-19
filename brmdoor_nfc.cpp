@@ -65,6 +65,10 @@ std::string NFCDevice::scanUID() throw(NFCError)
     int res;
     nfc_target nt;
 
+    if (!opened()) {
+        throw NFCError("NFC device not opened");
+    }
+
     res = nfc_initiator_poll_target(_nfcDevice, _modulations, _modulationsLen, pollNr, pollPeriod, &nt);
     if (res < 0) {
         throw NFCError("NFC polling error");
