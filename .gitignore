@@ -1,11 +1,14 @@
+#Generated files
 .*.swp
 *.so
 *.o
 *.pyc
 
+#SWIG
 brmdoor_nfc_wrap.cxx
 brmdoor_nfc.py
 
+#Vim, GDB, Doxygen
 tags
 .gdb_history
 doc
@@ -13,6 +16,9 @@ doc
 #Qt Creator files
 brmdoor_libnfc.config
 brmdoor_libnfc.creator
+brmdoor_libnfc.creator.user
 brmdoor_libnfc.files
 brmdoor_libnfc.includes
 
+#Komodo IDE
+brmdoor_libnfc.kpf
