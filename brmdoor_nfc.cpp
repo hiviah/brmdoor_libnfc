@@ -35,12 +35,28 @@ NFCDevice::NFCDevice()
 
 NFCDevice::~NFCDevice()
 {
+    //nfc_close(_nfcDevice);
     nfc_exit(_nfcContext);
 }
 
 std::string NFCDevice::scanUID()
 {
-    return "1234";
+    int res;
+    nfc_target nt;
+
+    res = nfc_initiator_poll_target(_nfcDevice, _modulations, _modulationsLen, pollNr, pollPeriod, &nt);
+    if (res < 0) {
+        throw NFCError("NFC polling error");
+    }
+
+    // we are not interested in non-ISO-14443A cards
+    if (nt.nm.nmt != NMT_ISO14443A) {
+        return "";
+    }
+
+    const nfc_iso14443a_info& nai = nt.nti.nai;
+
+    return string((const char*)nai.abtUid, nai.szUidLen);
 }
 
 const nfc_modulation NFCDevice::_modulations[5] = {
