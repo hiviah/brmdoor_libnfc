@@ -4,8 +4,6 @@ from binascii import hexlify
 
 try:
 	nfc = NFCDevice()
-	nfc.close()
-	nfc.open()
 	print hexlify(nfc.scanUID())
 	print "Device is opened:", nfc.opened()
 	print "Closing device"
