@@ -1,4 +1,5 @@
 #include <string>
+#include <cassert>
 
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
@@ -13,7 +14,8 @@ NFCDevice::NFCDevice() throw(NFCError):
     pollPeriod(2),
     _nfcContext(NULL),
     _nfcDevice(NULL),
-    _opened(false)
+    _opened(false),
+    _unloaded(false)
 {
     nfc_init(&_nfcContext);
     if (_nfcContext == NULL) {
@@ -26,7 +28,7 @@ NFCDevice::NFCDevice() throw(NFCError):
 NFCDevice::~NFCDevice()
 {
     close();
-    nfc_exit(_nfcContext);
+    unload();
 }
 
 void NFCDevice::open() throw(NFCError)
@@ -55,9 +57,24 @@ void NFCDevice::close()
         return;
     }
 
+    assert(_nfcDevice);
+
     nfc_close(_nfcDevice);
     _nfcDevice = NULL;
     _opened = false;
+}
+
+void NFCDevice::unload()
+{
+    if (_unloaded) {
+        return;
+    }
+
+    assert(_nfcContext);
+
+    nfc_exit(_nfcContext);
+    _nfcContext = NULL;
+    _unloaded = true;
 }
 
 std::string NFCDevice::scanUID() throw(NFCError)

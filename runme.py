@@ -11,5 +11,6 @@ try:
 	print "Closing device"
 	nfc.close()
 	print "Device is opened:", nfc.opened()
+	nfc.unload()
 except NFCError, e:
 	print "Reading UID failed:", e.what()

@@ -71,11 +71,17 @@ public:
     /** Open device explicitly. May be useful after explicit close */
     void open() throw(NFCError);
 
-    /** Returns true iff device was opened */
-    bool opened() const {return _opened;}
+    /** Returns true iff device was opened and not unloaded. */
+    bool opened() const {return _opened && !_unloaded;}
 
     /** Close reader. You need to reopen before reading again */
     void close();
+
+    /** 
+     * Unload all structures, close device. It's kind of explicit destructor
+     * since we can't be sure the destructor will be called in Python.
+     */
+    void unload();
 
     /** 
      * Specifies the number of polling (0x01 – 0xFE: 1 up to 254 polling, 0xFF:
@@ -105,6 +111,9 @@ protected:
 
     /** Whether device has been successfully opened */
     bool _opened;
+
+    /** Whether device and its internal libnfc structures have been unloaded */
+    bool _unloaded;
 
 };
 
