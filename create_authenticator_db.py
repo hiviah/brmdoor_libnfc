@@ -17,6 +17,6 @@ if __name__ == "__main__":
 	conn = sqlite3.connect(filename)
 	cursor = conn.cursor()
 	
-	cursor.execute("CREATE TABLE authorized_uids(uid_hex, nick)")
+	cursor.execute("CREATE TABLE authorized_uids(id INTEGER PRIMARY KEY AUTOINCREMENT, uid_hex TEXT, nick TEXT)")
 	conn.commit()
 	conn.close()
