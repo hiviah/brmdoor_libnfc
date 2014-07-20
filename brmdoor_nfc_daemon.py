@@ -26,6 +26,7 @@ class BrmdoorConfig(object):
 	
 	_defaults = {
 		"lock_opened_secs": "5",
+		"log_level": "info"
 	}
 	
 	def __init__(self, filename):
@@ -40,7 +41,20 @@ class BrmdoorConfig(object):
 		
 		self.authDbFilename = self.config.get("brmdoor", "auth_db_filename")
 		self.lockOpenedSecs = self.config.getint("brmdoor", "lock_opened_secs")
+		self.logFile = self.config.get("brmdoor", "log_file")
+		self.logLevel = self.convertLoglevel(self.config.get("brmdoor", "log_level"))
 	
+	def convertLoglevel(self, levelString):
+		"""Converts string 'debug', 'info', etc. into corresponding
+		logging.XXX value which is returned.
+		
+		@raises ValueError if the level is undefined
+		"""
+		try:
+			return getattr(logging, levelString.upper())
+		except AttributeError:
+			raise BrmdoorConfigError("No such loglevel - %s" % levelString)
+
 class NfcThread(threading.Thread):
 	"""Thread reading data from NFC reader"""
 	        
@@ -107,8 +121,12 @@ if __name__  == "__main__":
 	
 	config = BrmdoorConfig(sys.argv[1])
 	
-	logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
-		format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
+	if config.logFile == "-":
+		logging.basicConfig(stream=sys.stderr, level=config.logLevel,
+			format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
+	else:
+		logging.basicConfig(filename=config.logFile, level=config.logLevel,
+			format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
 	
 	uidQueue = Queue.Queue(1)
 	

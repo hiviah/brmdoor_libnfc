@@ -1,5 +1,9 @@
 # auth_db_filename - sqlite filename of authorized UIDs, create with create_authenticator_db.py
 # lock_opened_secs - how long lock should be held open in seconds, default 5
+# log_file - logs read UIDs and when was lock opened, use - for stderr
+# log_level - minimum log level - one of debug, info, warn, error, fatal, default info
 [brmdoor]
 auth_db_filename = test_uids_db.sqlite
 #lock_opened_secs = 5
+log_file = -
+#log_level = info
