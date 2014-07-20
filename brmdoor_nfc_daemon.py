@@ -5,14 +5,42 @@ import threading
 import Queue
 import logging
 import time
+import ConfigParser
 
 from binascii import hexlify
 
-from ConfigParser import SafeConfigParser
 
 from brmdoor_nfc import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator
 
+class BrmdoorConfigError(ConfigParser.Error):
+	"""
+	Signifies that config has missing or bad values.
+	"""
+	pass
+
+class BrmdoorConfig(object):
+	"""
+	Configuration parser. Holds config variables from config file.
+	"""
+	
+	_defaults = {
+		"lock_opened_secs": "5",
+	}
+	
+	def __init__(self, filename):
+		"""
+		Parse and read config from given filename.
+		
+		@throws ConfigParser.Error if parsing failed
+		@throws BrmdoorConfigError if some value was missing or invalid
+		"""
+		self.config = ConfigParser.SafeConfigParser(defaults=BrmdoorConfig._defaults)
+		self.config.read(filename)
+		
+		self.authDbFilename = self.config.get("brmdoor", "auth_db_filename")
+		self.lockOpenedSecs = self.config.getint("brmdoor", "lock_opened_secs")
+	
 class NfcThread(threading.Thread):
 	"""Thread reading data from NFC reader"""
 	        
@@ -31,22 +59,24 @@ class NfcThread(threading.Thread):
 		while True:
 			try:
 				uid_hex = hexlify(self.nfc.scanUID())
-				logging.info("Got UID %s" % uid_hex)
+				logging.debug("Got UID %s" % uid_hex)
 				if len(uid_hex) > 0:
 					self.uidQueue.put(uid_hex)
 					time.sleep(0.3)
 			except NFCError, e:
-				logging.warn("Failed to wait for RFID card: %s", e)
+				#this exception happens also when scanUID times out
+				logging.debug("Failed to wait for RFID card: %s", e)
 				
 
 class UnlockThread(threading.Thread):
 	"""Thread checking UIDs whether they are authorized"""
 	        
-	def __init__(self, uidQueue, authenticatorDBFname):
+	def __init__(self, uidQueue, authenticatorDBFname, lockOpenedSecs):
 		"""Create thread reading UIDs from PN53x reader.
 		"""
 		self.uidQueue = uidQueue
 		self.authenticatorDBFname = authenticatorDBFname
+		self.lockOpenedSecs = lockOpenedSecs
 		threading.Thread.__init__(self)
 
 	def run(self):
@@ -67,20 +97,26 @@ class UnlockThread(threading.Thread):
 				time.sleep(1)
 			else:
 				logging.info("Unlocking for %s", record)
-				time.sleep(1)
+				time.sleep(self.lockOpenedSecs)
 
 if __name__  == "__main__":
+	
+	if len(sys.argv) < 2:
+		print >> sys.stderr, "Syntax: brmdoor_nfc_daemon.py brmdoor_nfc.config"
+		sys.exit(1)
+	
+	config = BrmdoorConfig(sys.argv[1])
+	
 	logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
 		format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
 	
 	uidQueue = Queue.Queue(1)
-	#TODO use SafeConfigParser to get actual config data
 	
 	nfcThread = NfcThread(uidQueue)
 	nfcThread.setDaemon(True)
 	nfcThread.start()
 	
-	unlockThread = UnlockThread(uidQueue, "test_uids_db.sqlite")
+	unlockThread = UnlockThread(uidQueue, config.authDbFilename, config.lockOpenedSecs)
 	unlockThread.setDaemon(True)
 	unlockThread.start()
 	
