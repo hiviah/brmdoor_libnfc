@@ -113,11 +113,9 @@ if __name__  == "__main__":
 	uidQueue = Queue.Queue(1)
 	
 	nfcThread = NfcThread(uidQueue)
-	nfcThread.setDaemon(True)
 	nfcThread.start()
 	
 	unlockThread = UnlockThread(uidQueue, config.authDbFilename, config.lockOpenedSecs)
-	unlockThread.setDaemon(True)
 	unlockThread.start()
 	
 	uidQueue.join()
