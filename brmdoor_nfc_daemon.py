@@ -4,6 +4,7 @@ import sys
 import threading
 import Queue
 import logging
+import time
 
 from binascii import hexlify
 
@@ -31,9 +32,11 @@ class NfcThread(threading.Thread):
 			try:
 				uid_hex = hexlify(self.nfc.scanUID())
 				logging.info("Got UID %s" % uid_hex)
-				self.uidQueue.put(uid_hex)
+				if len(uid_hex) > 0:
+					self.uidQueue.put(uid_hex)
+					time.sleep(0.3)
 			except NFCError, e:
-				logging.warn("Failed to wait for RFID card", e)
+				logging.warn("Failed to wait for RFID card: %s", e)
 				
 
 class UnlockThread(threading.Thread):
@@ -61,14 +64,16 @@ class UnlockThread(threading.Thread):
 			
 			if record is None:
 				logging.info("Unknown UID %s", uid_hex)
+				time.sleep(1)
 			else:
 				logging.info("Unlocking for %s", record)
+				time.sleep(1)
 
 if __name__  == "__main__":
 	logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
 		format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
 	
-	uidQueue = Queue.Queue(512)
+	uidQueue = Queue.Queue(1)
 	#TODO use SafeConfigParser to get actual config data
 	
 	nfcThread = NfcThread(uidQueue)
