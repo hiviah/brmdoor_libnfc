@@ -22,3 +22,7 @@ brmdoor_libnfc.includes
 
 #Komodo IDE
 brmdoor_libnfc.kpf
+
+#Testing config
+brmdoor_nfc.config
+
