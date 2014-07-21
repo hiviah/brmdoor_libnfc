@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import threading
-import Queue
 import logging
 import time
 import ConfigParser
@@ -55,63 +53,59 @@ class BrmdoorConfig(object):
 		except AttributeError:
 			raise BrmdoorConfigError("No such loglevel - %s" % levelString)
 
-class NfcThread(threading.Thread):
+class NFCUnlocker(object):
 	"""Thread reading data from NFC reader"""
 	        
-	def __init__(self, uidQueue):
-		"""Create thread reading UIDs from PN53x reader.
+	def __init__(self, config):
+		"""Create worker reading UIDs from PN53x reader.
 		"""
-		self.uidQueue = uidQueue
-		threading.Thread.__init__(self)
+		self.authenticator = UidAuthenticator(config.authDbFilename)
+		self.lockOpenedSecs = config.lockOpenedSecs
 
 	def run(self):
 		"""
 		Waits for a card to get into reader field. Reads its UID and
-		stores it into uidQueue for later authentication check.
+		compares to database of authorized users. Unlocks lock if
+		authorized.
 		"""
 		self.nfc = NFCDevice()
+		#self.nfc.pollNr = 0xFF #poll indefinitely
 		while True:
 			try:
 				uid_hex = hexlify(self.nfc.scanUID())
-				logging.debug("Got UID %s" % uid_hex)
+				logging.debug("Got UID %s", uid_hex)
 				if len(uid_hex) > 0:
-					self.uidQueue.put(uid_hex)
+					self.actOnUid(uid_hex)
+				else:
+					#prevent busy loop if reader goes awry
 					time.sleep(0.3)
 			except NFCError, e:
 				#this exception happens also when scanUID times out
 				logging.debug("Failed to wait for RFID card: %s", e)
+			except KeyboardInterrupt:
+				logging.info("Exiting on keyboard interrupt")
+				self.nfc.close()
+				self.nfc.unload()
+				sys.exit(2)
+			except Exception:
+				logging.exception("Exception in main unlock thread")
 				
-
-class UnlockThread(threading.Thread):
-	"""Thread checking UIDs whether they are authorized"""
-	        
-	def __init__(self, uidQueue, authenticatorDBFname, lockOpenedSecs):
-		"""Create thread reading UIDs from PN53x reader.
+	def actOnUid(self, uid_hex):
 		"""
-		self.uidQueue = uidQueue
-		self.authenticatorDBFname = authenticatorDBFname
-		self.lockOpenedSecs = lockOpenedSecs
-		threading.Thread.__init__(self)
-
-	def run(self):
+		Do something with the UID scanned. Try to authenticate it against
+		database and open lock if authorized.
 		"""
-		Reads hex UIDs from queue, tries to find them in sqlite database.
+		record = self.authenticator.fetchUidRecord(uid_hex)
 		
-		If match in database is found, then unlock the lock (for now
-		only logs).
-		"""
-		self.authenticator = UidAuthenticator(self.authenticatorDBFname)
-		while True:
-			uid_hex = self.uidQueue.get()
-			
-			record = self.authenticator.fetchUidRecord(uid_hex)
-			
-			if record is None:
-				logging.info("Unknown UID %s", uid_hex)
-				time.sleep(1)
-			else:
-				logging.info("Unlocking for %s", record)
-				time.sleep(self.lockOpenedSecs)
+		#no match
+		if record is None:
+			logging.info("Unknown UID")
+			time.sleep(0.3)
+			return
+		
+		logging.info("Unlocking for UID %s", record)
+		time.sleep(self.lockOpenedSecs)
+
 
 if __name__  == "__main__":
 	
@@ -128,13 +122,6 @@ if __name__  == "__main__":
 		logging.basicConfig(filename=config.logFile, level=config.logLevel,
 			format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
 	
-	uidQueue = Queue.Queue(1)
-	
-	nfcThread = NfcThread(uidQueue)
-	nfcThread.start()
-	
-	unlockThread = UnlockThread(uidQueue, config.authDbFilename, config.lockOpenedSecs)
-	unlockThread.start()
-	
-	uidQueue.join()
+	nfcUnlocker = NFCUnlocker(config)
+	nfcUnlocker.run()
 	
