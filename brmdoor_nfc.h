@@ -30,6 +30,45 @@ protected:
 };
 
 /**
+ * Represents response APDU for ISO14443-4.
+ */
+class ResponseAPDU
+{
+public:
+    
+    /** Parse response APDU from raw data */
+    ResponseAPDU(const std::string& data);
+    
+    ~ResponseAPDU() {}
+    
+    /** Return whole status word */
+    uint16_t sw() const {return _sw;}
+    
+    /** Return first byte of status word */
+    uint8_t sw1() const {return _sw >> 8;}
+    
+    /** Return second byte of status word */
+    uint8_t sw2() const {return _sw & 0xFF;}
+    
+    /** Return whether this is properly formed response */
+    bool valid() const {return _valid;}
+    
+    /** Returns APDU data */
+    const std::string& data() const {return _data;}
+
+private:
+    
+    /** Data from response, without SW1 and SW2 */
+    std::string _data;
+    
+   /** SW1 and SW2 */ 
+    uint16_t _sw;
+    
+   /** Whether response APDU has had enough data to be valid */ 
+    bool _valid;
+};
+
+/**
  * Represents one PN532 reader device. Config is taken from default
  * libnfc-specified location. That usually means first device found is used.
  *
@@ -67,6 +106,20 @@ public:
      * @throws NFCError if polling failed
      */
     std::string scanUID() throw(NFCError);
+    
+    /**
+     * Wait for one passive or emulated target and select it by reader.
+     */
+    void selectPassiveTarget() throw(NFCError);
+    
+    /**
+     * Send APDU to passive or emulated target. The target must be already
+     * selected by selectPassiveTarget() or scanUID().
+     *
+     * @param apdu command APDU to send
+     * @param returns response APDU received from target
+     */
+    ResponseAPDU sendAPDU(const std::string& apdu) throw(NFCError);
 
     /** Open device explicitly. May be useful after explicit close */
     void open() throw(NFCError);
@@ -94,6 +147,11 @@ public:
      * (0x01 – 0x0F: 150ms – 2.25s)
      */
     uint8_t pollPeriod;
+    
+    /**
+     * Timeout for waiting response to sent APDU. Value -1 means wait forever.
+     */
+    int apduTimeout;
 
 protected:
 
