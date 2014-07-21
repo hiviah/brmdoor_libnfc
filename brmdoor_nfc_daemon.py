@@ -24,6 +24,7 @@ class BrmdoorConfig(object):
 	
 	_defaults = {
 		"lock_opened_secs": "5",
+		"unknown_uid_timeout_secs": "5",
 		"log_level": "info"
 	}
 	
@@ -39,6 +40,7 @@ class BrmdoorConfig(object):
 		
 		self.authDbFilename = self.config.get("brmdoor", "auth_db_filename")
 		self.lockOpenedSecs = self.config.getint("brmdoor", "lock_opened_secs")
+		self.unknownUidTimeoutSecs = self.config.getint("brmdoor", "unknown_uid_timeout_secs")
 		self.logFile = self.config.get("brmdoor", "log_file")
 		self.logLevel = self.convertLoglevel(self.config.get("brmdoor", "log_level"))
 	
@@ -60,6 +62,7 @@ class NFCUnlocker(object):
 		"""Create worker reading UIDs from PN53x reader.
 		"""
 		self.authenticator = UidAuthenticator(config.authDbFilename)
+		self.unknownUidTimeoutSecs = config.unknownUidTimeoutSecs
 		self.lockOpenedSecs = config.lockOpenedSecs
 
 	def run(self):
@@ -99,8 +102,8 @@ class NFCUnlocker(object):
 		
 		#no match
 		if record is None:
-			logging.info("Unknown UID")
-			time.sleep(0.3)
+			logging.info("Unknown UID %s", uid_hex)
+			time.sleep(self.unknownUidTimeoutSecs)
 			return
 		
 		logging.info("Unlocking for UID %s", record)
