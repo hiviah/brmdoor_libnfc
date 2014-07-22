@@ -114,7 +114,7 @@ std::string NFCDevice::scanUID() throw(NFCError)
     const nfc_iso14443a_info& nai = nt.nti.nai;
     uid = string((const char*)nai.abtUid, nai.szUidLen);
 
-    nfc_initiator_deselect_target(_nfcDevice);
+//    nfc_initiator_deselect_target(_nfcDevice);
 
     return uid;
 }
