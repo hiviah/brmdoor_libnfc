@@ -24,12 +24,12 @@ try:
 	nfc = NFCDevice()
 	uid = nfc.scanUID()
 	print "UID", hexlify(uid)
-	nfc.close()
-	nfc.open()
+	#nfc.close()
+	#nfc.open()
 
 	print "Now trying to send ISO14443-4 APDUs"
 	try:
-		nfc.selectPassiveTarget()
+		#nfc.selectPassiveTarget()
 		for apdu in apdus:
 			print "Command APDU:", formatAPDU(apdu)
 			rapdu = nfc.sendAPDU(apdu)
