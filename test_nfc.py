@@ -10,7 +10,13 @@ hex_apdus = [
 	"00 A4 04 00 07 D2760000850101",
 	"00 a4 00 0c 02 E104",
 	"00 b0 00 00 30",
-] 
+]
+
+# Yubikey Neo command for HMAC-SHA1 of string 'Sample #2'
+#hex_apdus = [
+#	"00 A4 04 00 07 A0 00 00 05 27 20 01",
+#	"00 01 38 00 09 53 61 6D 70 6C 65 20 23 32"
+#]
 
 apdus = [hex_apdu.replace(" ","").decode("hex") for hex_apdu in hex_apdus]
 
@@ -18,10 +24,12 @@ try:
 	nfc = NFCDevice()
 	uid = nfc.scanUID()
 	print "UID", hexlify(uid)
+	nfc.close()
+	nfc.open()
 
 	print "Now trying to send ISO14443-4 APDUs"
 	try:
-		#nfc.selectPassiveTarget()
+		nfc.selectPassiveTarget()
 		for apdu in apdus:
 			print "Command APDU:", formatAPDU(apdu)
 			rapdu = nfc.sendAPDU(apdu)
