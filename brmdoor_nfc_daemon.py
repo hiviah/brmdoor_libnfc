@@ -50,7 +50,7 @@ class BrmdoorConfig(object):
 		"""Converts string 'debug', 'info', etc. into corresponding
 		logging.XXX value which is returned.
 		
-		@raises ValueError if the level is undefined
+		@raises BrmdoorConfigError if the level is undefined
 		"""
 		try:
 			return getattr(logging, levelString.upper())
