@@ -26,4 +26,26 @@ So we need and have:
 
 ## Howto
 
-...will be done once all the scripts are finished.
+1. Create the database
+
+        python create_authenticator_db.py authenthicator_db.sqlite
+
+2. Copy sample config file, edit your pins, DB file location, timeouts
+
+        cp brmdoor_nfc.config.sample brmdoor.config
+
+3. Add some users
+
+  - either authenthication by UID, e.g.:
+
+        brmdoor_adduser.py -c brmdoor.config -a uid 34795FCC SomeUserName
+
+  - authenthication by Yubikey's HMAC-SHA1 programmed on slot 2
+
+        brmdoor_adduser.py -c brmdoor.config -a hmac 40795FCCAB0701 SomeUserName 000102030405060708090a0b0c0d0e0f31323334
+
+4. Run the daemon
+
+    python brmdoor_nfc_daemon.py brmdoor.config
+
+
