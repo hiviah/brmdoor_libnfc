@@ -10,6 +10,7 @@ from binascii import hexlify
 
 from brmdoor_nfc import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator
+import unlocker
 
 class BrmdoorConfigError(ConfigParser.Error):
 	"""
@@ -43,6 +44,7 @@ class BrmdoorConfig(object):
 		self.unknownUidTimeoutSecs = self.config.getint("brmdoor", "unknown_uid_timeout_secs")
 		self.logFile = self.config.get("brmdoor", "log_file")
 		self.logLevel = self.convertLoglevel(self.config.get("brmdoor", "log_level"))
+		self.unlocker = self.config.get("brmdoor", "unlocker")
 	
 	def convertLoglevel(self, levelString):
 		"""Converts string 'debug', 'info', etc. into corresponding
@@ -64,6 +66,10 @@ class NFCScanner(object):
 		self.authenticator = UidAuthenticator(config.authDbFilename)
 		self.unknownUidTimeoutSecs = config.unknownUidTimeoutSecs
 		self.lockOpenedSecs = config.lockOpenedSecs
+		
+		unlockerClassName = config.unlocker
+		unlockerClass = getattr(unlocker, unlockerClassName)
+		self.unlocker = unlockerClass(config)
 
 	def run(self):
 		"""
@@ -107,7 +113,7 @@ class NFCScanner(object):
 			return
 		
 		logging.info("Unlocking for UID %s", record)
-		time.sleep(self.lockOpenedSecs)
+		self.unlocker.unlock()
 
 
 if __name__  == "__main__":
@@ -125,6 +131,6 @@ if __name__  == "__main__":
 		logging.basicConfig(filename=config.logFile, level=config.logLevel,
 			format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
 	
-	nfcUnlocker = NFCUnlocker(config)
-	nfcUnlocker.run()
+	nfcScanner = NFCScanner(config)
+	nfcScanner.run()
 	

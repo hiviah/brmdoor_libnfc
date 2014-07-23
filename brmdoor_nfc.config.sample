@@ -4,9 +4,20 @@
 #       prevents too many messages
 # log_file - logs read UIDs and when was lock opened, use - for stderr
 # log_level - minimum log level - one of debug, info, warn, error, fatal, default info
+# unlocker - which unlocker class to use - Unlocker or UnlockerWiringPi
+#	Unlocker is just dummy test class. 
 [brmdoor]
 auth_db_filename = test_uids_db.sqlite
 #lock_opened_secs = 5
 #unknown_uid_timeout_secs = 5
 log_file = -
 #log_level = info
+unlocker = Unlocker
+
+# Config section for dummy unlocker. It has no options.
+[Unlocker]
+
+# Config for wiringPi-based unlocker
+# lock_pin - which pin needs to be pulled high to disengage the lock
+[UnlockerWiringPi]
+lock_pin = 18
