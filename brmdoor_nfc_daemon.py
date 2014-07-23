@@ -9,7 +9,7 @@ from binascii import hexlify
 
 
 from brmdoor_nfc import NFCDevice, NFCError
-from brmdoor_authenticator import UidAuthenticator
+from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator
 import unlocker
 
 class BrmdoorConfigError(ConfigParser.Error):
@@ -64,6 +64,7 @@ class NFCScanner(object):
 		"""Create worker reading UIDs from PN53x reader.
 		"""
 		self.authenticator = UidAuthenticator(config.authDbFilename)
+		self.hmacAuthenticator = None
 		self.unknownUidTimeoutSecs = config.unknownUidTimeoutSecs
 		self.lockOpenedSecs = config.lockOpenedSecs
 		
@@ -78,6 +79,9 @@ class NFCScanner(object):
 		authorized.
 		"""
 		self.nfc = NFCDevice()
+		self.hmacAuthenticator = YubikeyHMACAuthenthicator(
+			config.authDbFilename, self.nfc
+		)
 		#self.nfc.pollNr = 0xFF #poll indefinitely
 		while True:
 			try:
@@ -106,14 +110,23 @@ class NFCScanner(object):
 		"""
 		record = self.authenticator.fetchUidRecord(uid_hex)
 		
-		#no match
-		if record is None:
-			logging.info("Unknown UID %s", uid_hex)
-			time.sleep(self.unknownUidTimeoutSecs)
+		#direct UID match
+		if record is not None:
+			logging.info("Unlocking for UID %s", record)
+			self.unlocker.unlock()
 			return
 		
-		logging.info("Unlocking for UID %s", record)
-		self.unlocker.unlock()
+		#test for Yubikey HMAC auth
+		record = self.hmacAuthenticator.checkHMACforUID(uid_hex)
+		
+		if record is not None:
+			logging.info("Unlocking after HMAC for UID %s", record)
+			self.unlocker.unlock()
+			return
+		
+		logging.info("Unknown UID %s", uid_hex)
+		time.sleep(self.unknownUidTimeoutSecs)
+		
 
 
 if __name__  == "__main__":
