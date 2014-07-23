@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import hmac
 import hashlib
@@ -110,7 +111,7 @@ class YubikeyHMACAuthenthicator(object):
 		nick = record[0]
 		secretKey = record[1].decode("hex")
 		
-		challenge = 'Sample #2'
+		challenge = os.urandom(32)
 		
 		# Select HMAC-SHA1 on slot 2 from Yubikey
 		apdusHex = [
