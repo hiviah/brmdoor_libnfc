@@ -44,8 +44,8 @@ So we need and have:
 
         brmdoor_adduser.py -c brmdoor.config -a hmac 40795FCCAB0701 SomeUserName 000102030405060708090a0b0c0d0e0f31323334
 
-4. Run the daemon
+Finally, run the daemon:
 
-    python brmdoor_nfc_daemon.py brmdoor.config
+        python brmdoor_nfc_daemon.py brmdoor.config
 
 
