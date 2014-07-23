@@ -12,7 +12,7 @@ auth_db_filename = test_uids_db.sqlite
 #unknown_uid_timeout_secs = 5
 log_file = -
 #log_level = info
-unlocker = Unlocker
+unlocker = UnlockerWiringPi
 
 # Config section for dummy unlocker. It has no options.
 [Unlocker]
