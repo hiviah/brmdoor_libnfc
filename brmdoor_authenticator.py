@@ -132,6 +132,7 @@ class YubikeyHMACAuthenthicator(object):
 				return None
 			
 		if not self.hmacCheck(secretKey, challenge, rapdu.data()):
+			logging.info("HMAC check failed for UID %s", uid_hex)
 			return None
 		
 		return UidRecord(uid_hex, nick)
