@@ -55,7 +55,7 @@ class BrmdoorConfig(object):
 		except AttributeError:
 			raise BrmdoorConfigError("No such loglevel - %s" % levelString)
 
-class NFCUnlocker(object):
+class NFCScanner(object):
 	"""Thread reading data from NFC reader"""
 	        
 	def __init__(self, config):
