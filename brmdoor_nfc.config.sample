@@ -20,4 +20,4 @@ unlocker = UnlockerWiringPi
 # Config for wiringPi-based unlocker
 # lock_pin - which pin needs to be pulled high to disengage the lock
 [UnlockerWiringPi]
-lock_pin = 18
+lock_pin = 17

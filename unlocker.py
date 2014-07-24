@@ -29,6 +29,7 @@ class UnlockerWiringPi(Unlocker):
 
 	def __init__(self, config):
 		Unlocker.__init__(self, config)
+                wiringpi.wiringPiSetupGpio() # pin numbers follow P1 GPIO header
 		self.lockPin = self.config.getint("UnlockerWiringPi", "lock_pin")
 		wiringpi.pinMode(self.lockPin, 1) #output
 	
