@@ -22,6 +22,13 @@ class Unlocker(object):
 		"""
 		time.sleep(self.lockOpenedSecs)
 
+	def lock(self):
+		"""
+		Lock the lock back. Meant to be used when program is shut down
+		so that lock is not left disengaged.
+		"""
+		pass
+
 
 class UnlockerWiringPi(Unlocker):
 	"""Uses configured pings via WiringPi to open lock.
@@ -39,3 +46,11 @@ class UnlockerWiringPi(Unlocker):
 		wiringpi.digitalWrite(self.lockPin, 1)
 		time.sleep(self.lockOpenedSecs)
 		wiringpi.digitalWrite(self.lockPin, 0)
+
+	def lock(self):
+		"""
+		Lock the lock back. Meant to be used when program is shut down
+		so that lock is not left disengaged.
+		"""
+		wiringpi.digitalWrite(self.lockPin, 0)
+

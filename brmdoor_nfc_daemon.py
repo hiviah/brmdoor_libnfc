@@ -99,6 +99,7 @@ class NFCScanner(object):
 				logging.info("Exiting on keyboard interrupt")
 				self.nfc.close()
 				self.nfc.unload()
+				self.unlocker.lock()
 				sys.exit(2)
 			except Exception:
 				logging.exception("Exception in main unlock thread")
