@@ -24,6 +24,13 @@ So we need and have:
     edit the sqlite database
   - extensibility
 
+## Building
+
+You need just to run `make`. Additional dependencies:
+
+- [SWIG](http://www.swig.org/)
+- [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
+
 ## Howto
 
 1. Create the database
