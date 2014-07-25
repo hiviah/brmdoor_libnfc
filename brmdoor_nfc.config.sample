@@ -18,6 +18,6 @@ unlocker = UnlockerWiringPi
 [Unlocker]
 
 # Config for wiringPi-based unlocker
-# lock_pin - which pin needs to be pulled high to disengage the lock
+# lock_pin - which pin needs to be pulled high to disengage the lock (GPIO numbering)
 [UnlockerWiringPi]
 lock_pin = 17
