@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
 	if opts.config is None:
 		print >> sys.stderr, "You must specify config file via the -c option!"
-                parser.print_help()
+		parser.print_help()
 		sys.exit(1)
 		
 	if opts.authtype not in ["uid", "hmac"]:
