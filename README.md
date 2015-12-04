@@ -43,6 +43,18 @@ You need just to run `make`. Additional dependencies:
 
 Finally, run the daemon:
 
-        python brmdoor_nfc_daemon.py brmdoor_nfc.config
+        sudo python brmdoor_nfc_daemon.py brmdoor_nfc.config
 
+## Note on configuring libnfc devices
+
+If you have PN532 device on other bus than USB (e.g. SPI), first search for it using:
+
+    sudo nfc-scan-device -i
+
+After that, create file `/etc/nfc/libnfc.conf` with line describing your device
+from `nfc-scan-device` above, e.g. for SPI device:
+
+    device.connstring = "pn532_spi:/dev/spidev0.0"
+
+This daemon expects the library to be already configured to find the PN532 device.
 
