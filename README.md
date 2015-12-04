@@ -9,6 +9,9 @@ can work with libnfc (including common x86 systems).
 
 Info about authorized users and their cards and keys is stored in sqlite database.
 
+This was originally designed for Raspberry (Raspbian), but it also runs on
+desktop PC if you have the PN532 USB reader.
+
 ## Building
 
 You need just to run `make`. Additional dependencies:
