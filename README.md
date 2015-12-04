@@ -13,6 +13,7 @@ Info about authorized users and their cards and keys is stored in sqlite databas
 
 You need just to run `make`. Additional dependencies:
 
+- [libnfc](https://github.com/nfc-tools/libnfc/releases), already present in Raspbian 8 repositories
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - you may have to change `python2.7-config` to `python-config` on some older systems in Makefile
@@ -45,7 +46,7 @@ Finally, run the daemon:
 
         sudo python brmdoor_nfc_daemon.py brmdoor_nfc.config
 
-## Note on configuring libnfc devices
+## Configuring libnfc devices
 
 If you have PN532 device on other bus than USB (e.g. SPI), first search for it using:
 
@@ -58,3 +59,5 @@ from `nfc-scan-device` above, e.g. for SPI device:
 
 This daemon expects the library to be already configured to find the PN532 device.
 
+If you installed libnfc from source, the default directory might be
+`/usr/local/etc/nfc` instead of `/etc/nfc`.
