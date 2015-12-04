@@ -1,4 +1,4 @@
-PYTHON_INCLUDES := $(shell python-config --includes)
+PYTHON_INCLUDES := $(shell python2.7-config --includes)
 CXXFLAGS += -Wall -g $(PYTHON_INCLUDES) -fPIC
 LDFLAGS += -lnfc
 OBJECTS = brmdoor_nfc.o brmdoor_nfc_wrap.o
