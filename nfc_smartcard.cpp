@@ -5,7 +5,7 @@
 #include <nfc/nfc-types.h>
 
 
-#include "brmdoor_nfc.h"
+#include "nfc_smartcard.h"
 
 using namespace std;
 

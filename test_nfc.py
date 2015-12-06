@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from brmdoor_nfc import NFCDevice, NFCError
+from nfc_smartcard import NFCDevice, NFCError
 from binascii import hexlify
 
 def formatAPDU(apdu):

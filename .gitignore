@@ -5,8 +5,8 @@
 *.pyc
 
 #SWIG
-brmdoor_nfc_wrap.cxx
-brmdoor_nfc.py
+nfc_smartcard_wrap.cxx
+nfc_smartcard.py
 
 #Vim, GDB, Doxygen
 tags
@@ -26,3 +26,5 @@ brmdoor_libnfc.kpf
 #Testing config
 brmdoor_nfc.config
 
+# flags for custom installed libnfc to be sourced into environment
+env_flags

@@ -3,22 +3,22 @@ PYTHON_CONFIG := python$(DEFAULT_PYTHON_VERSION)-config
 PYTHON_INCLUDES := $(shell $(PYTHON_CONFIG) --includes)
 CXXFLAGS += -Wall -g $(PYTHON_INCLUDES) -fPIC
 LDFLAGS += -lnfc
-OBJECTS = brmdoor_nfc.o brmdoor_nfc_wrap.o
-SWIG_GENERATED = brmdoor_nfc_wrap.cxx brmdoor_nfc.py
-PY_MODULE = _brmdoor_nfc.so
+OBJECTS = nfc_smartcard.o nfc_smartcard_wrap.o
+SWIG_GENERATED = nfc_smartcard_wrap.cxx nfc_smartcard.py
+PY_MODULE = _nfc_smartcard.so
 
 all: $(PY_MODULE)
 
 $(PY_MODULE): $(OBJECTS)
 	g++ -shared -o $@ $(OBJECTS) $(LDFLAGS)
 
-brmdoor_nfc.o: brmdoor_nfc.cpp brmdoor_nfc.h
-	g++ -c $(CXXFLAGS) brmdoor_nfc.cpp
+nfc_smartcard.o: nfc_smartcard.cpp nfc_smartcard.h
+	g++ -c $(CXXFLAGS) nfc_smartcard.cpp
 
-brmdoor_nfc_wrap.o: brmdoor_nfc_wrap.cxx
+nfc_smartcard_wrap.o: nfc_smartcard_wrap.cxx
 	g++ -c $(CXXFLAGS) $<
 
-brmdoor_nfc_wrap.cxx: brmdoor_nfc.i brmdoor_nfc.h
+nfc_smartcard_wrap.cxx: nfc_smartcard.i nfc_smartcard.h
 	swig -python -c++ $<
 
 clean:

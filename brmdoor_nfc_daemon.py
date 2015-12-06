@@ -8,7 +8,7 @@ import ConfigParser
 from binascii import hexlify
 
 
-from brmdoor_nfc import NFCDevice, NFCError
+from nfc_smartcard import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator
 import unlocker
 

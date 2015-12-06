@@ -4,7 +4,7 @@ import hmac
 import hashlib
 import logging
 
-from brmdoor_nfc import NFCError
+from nfc_smartcard import NFCError
 
 
 class UidRecord(object):
