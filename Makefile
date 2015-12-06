@@ -1,4 +1,6 @@
-PYTHON_INCLUDES := $(shell python2.7-config --includes)
+DEFAULT_PYTHON_VERSION := $(shell python2 -c 'import platform; print "%s.%s" % platform.python_version_tuple()[:2]')
+PYTHON_CONFIG := python$(DEFAULT_PYTHON_VERSION)-config
+PYTHON_INCLUDES := $(shell $(PYTHON_CONFIG) --includes)
 CXXFLAGS += -Wall -g $(PYTHON_INCLUDES) -fPIC
 LDFLAGS += -lnfc
 OBJECTS = brmdoor_nfc.o brmdoor_nfc_wrap.o
