@@ -31,7 +31,6 @@ You need just to run `make`. Additional dependencies:
 - [libnfc](https://github.com/nfc-tools/libnfc/releases), already present in Raspbian 8 repositories
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
-- you may have to change `python2.7-config` to `python-config` on some older systems in Makefile
 
 ## Howto
 
