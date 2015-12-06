@@ -21,6 +21,13 @@ You need just to run `make`. Additional dependencies:
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - you may have to change `python2.7-config` to `python-config` on some older systems in Makefile
 
+## NFC smartcard API
+
+This project shows how to use libnfc from python to send APDUs to NFC
+smartcards. Have a look at `test_nfc.py` for some examples.
+
+It is much more general in use than to use it as authenthicator to open door.
+
 ## Howto
 
 1. Create the database
