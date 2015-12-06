@@ -4,13 +4,25 @@ This is an access-control system implementation via contactless ISO 14443A cards
 and a PN53x-based reader. So you basically swipe your card, and if it's in
 database, the door unlocks.
 
-It's primarily intended for Raspberry Pi, but can work for other plaforms that
-can work with libnfc (including common x86 systems).
-
 Info about authorized users and their cards and keys is stored in sqlite database.
 
 This was originally designed for Raspberry (Raspbian), but it also runs on
 desktop PC if you have the PN532 USB reader.
+
+The daemon is implemented in `brmdoor_nfc_daemon.py`.
+
+## NFC smartcard API
+
+This project shows how to use libnfc from python to send APDUs to NFC
+smartcards. Have a look at `test_nfc.py` for some examples, currently it
+shows four interactions with NFC smartcards:
+
+* read NDEF message from token (Mifare Desfire, Yubikey Neo)
+* do HMAC-SHA1 authenthication (Yubikey Neo)
+* read Track 2 Equivalent Data from Visa
+* execute signature for payment on Mastercard
+
+It is much more general in use than to use it as authenthicator to open door.
 
 ## Building
 
@@ -20,13 +32,6 @@ You need just to run `make`. Additional dependencies:
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - you may have to change `python2.7-config` to `python-config` on some older systems in Makefile
-
-## NFC smartcard API
-
-This project shows how to use libnfc from python to send APDUs to NFC
-smartcards. Have a look at `test_nfc.py` for some examples.
-
-It is much more general in use than to use it as authenthicator to open door.
 
 ## Howto
 
