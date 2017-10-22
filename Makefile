@@ -19,7 +19,7 @@ nfc_smartcard_wrap.o: nfc_smartcard_wrap.cxx
 	g++ -c $(CXXFLAGS) $<
 
 nfc_smartcard_wrap.cxx: nfc_smartcard.i nfc_smartcard.h
-	swig3.0 -python -c++ $<
+	swig -python -c++ $<
 
 clean:
 	rm -f $(OBJECTS) $(PY_MODULE) $(SWIG_GENERATED) *.pyc

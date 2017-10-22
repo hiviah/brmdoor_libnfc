@@ -36,7 +36,7 @@ You need just to run `make`. Additional dependencies:
 
 All dependencies except for wiring can be installed via:
 
-`apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig3.0`
+`apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig2.0`
 
 ## Howto
 
