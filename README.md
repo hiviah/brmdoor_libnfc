@@ -28,9 +28,15 @@ It is much more general in use than to use it as authenthicator to open door.
 
 You need just to run `make`. Additional dependencies:
 
-- [libnfc](https://github.com/nfc-tools/libnfc/releases), already present in Raspbian 8 repositories
+- [libnfc](https://github.com/nfc-tools/libnfc/releases), in Debian and Ubuntu as libnfc-dev
+- [libfreefare](https://github.com/nfc-tools/libfreefare), in Debian and Ubuntu install libfreefare-bin and libfreefare-dev
+- [python-axolotl-curve25519](https://github.com/tgalal/python-axolotl-curve25519), in Ubuntu and Debian install python-axolotl-curve25519
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
+
+All dependencies except for wiring can be installed via:
+
+`apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig3.0`
 
 ## Howto
 
@@ -44,17 +50,28 @@ You need just to run `make`. Additional dependencies:
 
 3. Add some users
 
-  - either authenthication by UID, e.g.:
+  - either authentication by UID, e.g.:
 
-        brmdoor_adduser.py -c brmdoor_nfc.config -a uid 34795FCC SomeUserName
+        ./brmdoor_adduser.py -c brmdoor_nfc.config -a uid 34795FCC SomeUserName
 
-  - authenthication by Yubikey's HMAC-SHA1 programmed on slot 2
+  - authentication by Yubikey's HMAC-SHA1 programmed on slot 2
 
-        brmdoor_adduser.py -c brmdoor_nfc.config -a hmac 40795FCCAB0701 SomeUserName 000102030405060708090a0b0c0d0e0f31323334
+        ./brmdoor_adduser.py -c brmdoor_nfc.config -a hmac 40795FCCAB0701 SomeUserName 000102030405060708090a0b0c0d0e0f31323334
 
-  - to program Yubikey slot 2 to use HMAC with given key, use:
+  - to program Yubikey slot 2 to use HMAC with given key (requires package `yubikey-personalization`), use:
 
         ykpersonalize -2 -ochal-resp -ohmac-sha1 -ohmac-lt64 -oserial-api-visible
+        
+  - authentication using signed UID as NDEF message on Desfire:
+  
+        ./brmdoor_adduser.py -c brmdoor.config -a ndef 04631982cc2280 SomeUserName"
+  
+  - you need to generate Ed25519 keypair, store the private key somewhere safe and put the public in config file
+  
+        ./generate_ed25519_keypair.py
+        
+  - you need to program the Desfire card to have the signature
+       
 
 Finally, run the daemon:
 

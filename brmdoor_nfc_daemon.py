@@ -9,7 +9,7 @@ from binascii import hexlify
 
 
 from nfc_smartcard import NFCDevice, NFCError
-from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator
+from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator, DesfireEd25519Authenthicator
 import unlocker
 
 class BrmdoorConfigError(ConfigParser.Error):
@@ -40,6 +40,7 @@ class BrmdoorConfig(object):
         self.config.read(filename)
         
         self.authDbFilename = self.config.get("brmdoor", "auth_db_filename")
+        self.desfirePubkey = self.config.get("brmdoor", "desfire_ed25519_pubkey")
         self.lockOpenedSecs = self.config.getint("brmdoor", "lock_opened_secs")
         self.unknownUidTimeoutSecs = self.config.getint("brmdoor", "unknown_uid_timeout_secs")
         self.logFile = self.config.get("brmdoor", "log_file")
@@ -65,6 +66,7 @@ class NFCScanner(object):
         """
         self.authenticator = UidAuthenticator(config.authDbFilename)
         self.hmacAuthenticator = None
+        self.desfireAuthenticator = None
         self.unknownUidTimeoutSecs = config.unknownUidTimeoutSecs
         self.lockOpenedSecs = config.lockOpenedSecs
         
@@ -81,6 +83,10 @@ class NFCScanner(object):
         self.nfc = NFCDevice()
         self.hmacAuthenticator = YubikeyHMACAuthenthicator(
             config.authDbFilename, self.nfc
+        )
+        self.desfireAuthenticator = DesfireEd25519Authenthicator(
+            config.authDbFilename, self.nfc,
+            config.desfirePubkey
         )
         #self.nfc.pollNr = 0xFF #poll indefinitely
         while True:
@@ -124,7 +130,15 @@ class NFCScanner(object):
             logging.info("Unlocking after HMAC for UID %s", record)
             self.unlocker.unlock()
             return
-        
+
+        #test for Desfire NDEF auth
+        record = self.desfireAuthenticator.checkUIDSignature(uid_hex)
+
+        if record is not None:
+            logging.info("Unlocking after Desfire NDEF ed25519 check for UID %s", record)
+            self.unlocker.unlock()
+            return
+
         logging.info("Unknown UID %s", uid_hex)
         time.sleep(self.unknownUidTimeoutSecs)
         

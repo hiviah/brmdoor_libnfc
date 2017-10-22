@@ -8,6 +8,8 @@
 #	Unlocker is just dummy test class. 
 [brmdoor]
 auth_db_filename = test_uids_db.sqlite
+#corresponding private key = 10ee85f987e7682d9acf24ab07ff0e302ee4cdd426f83a055d3a337a4f01314b
+desfire_ed25519_pubkey = 4c625187d79fdee97a6af48cb8f854e7f313c8158de94e667e1509bd26617d27
 #lock_opened_secs = 5
 #unknown_uid_timeout_secs = 5
 log_file = -

@@ -28,5 +28,10 @@ if __name__ == "__main__":
                key_hex TEXT,
                nick TEXT)
     """)
+    cursor.execute("""CREATE TABLE authorized_desfires(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uid_hex TEXT,
+        nick TEXT)
+    """)
     conn.commit()
     conn.close()

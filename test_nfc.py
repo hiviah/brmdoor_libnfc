@@ -51,30 +51,48 @@ print "Available tests: %s" % ", ".join(sorted(tests.keys()))
 print "Selected test: %s" % apdu_test
 
 # select apdus according to test name
-hex_apdus = tests[apdu_test]
-apdus = [hex_apdu.replace(" ","").decode("hex") for hex_apdu in hex_apdus]
+if apdu_test in tests:
+    hex_apdus = tests[apdu_test]
+    apdus = [hex_apdu.replace(" ","").decode("hex") for hex_apdu in hex_apdus]
 
-try:
-    nfc = NFCDevice()
-    uid = nfc.scanUID()
-    print "UID", hexlify(uid)
-    #nfc.close()
-    #nfc.open()
-
-    print "Now trying to send ISO14443-4 APDUs"
     try:
-        #nfc.selectPassiveTarget()
-        for apdu in apdus:
-            print "Command APDU:", formatAPDU(apdu)
-            rapdu = nfc.sendAPDU(apdu)
-            print "Response APDU valid: %s, SW %04x, data %s" % (rapdu.valid(), rapdu.sw(), hexlify(rapdu.data()))
-    except NFCError, e:
-        print "Failed to transmit APDU:", e.what()
+        nfc = NFCDevice()
+        uid = nfc.scanUID()
+        print "UID", hexlify(uid)
+        #nfc.close()
+        #nfc.open()
 
-    print "Device is opened:", nfc.opened()
-    print "Closing device"
-    nfc.close()
-    print "Device is opened:", nfc.opened()
-    nfc.unload()
-except NFCError, e:
-    print "Reading UID failed:", e.what()
+        print "Now trying to send ISO14443-4 APDUs"
+        try:
+            #nfc.selectPassiveTarget()
+            for apdu in apdus:
+                print "Command APDU:", formatAPDU(apdu)
+                rapdu = nfc.sendAPDU(apdu)
+                print "Response APDU valid: %s, SW %04x, data %s" % (rapdu.valid(), rapdu.sw(), hexlify(rapdu.data()))
+        except NFCError, e:
+            print "Failed to transmit APDU:", e.what()
+
+        print "Device is opened:", nfc.opened()
+        print "Closing device"
+        nfc.close()
+        print "Device is opened:", nfc.opened()
+        nfc.unload()
+    except NFCError, e:
+        print "Reading UID failed:", e.what()
+elif apdu_test == "desfire-ndef4":
+    try:
+        nfc = NFCDevice()
+        uid = nfc.scanUID()
+        print "UID", hexlify(uid)
+        #nfc.close()
+        #nfc.open()
+
+        ndef = nfc.readDesfireNDEF()
+        print ndef
+        print "Device is opened:", nfc.opened()
+        print "Closing device"
+        nfc.close()
+        print "Device is opened:", nfc.opened()
+        nfc.unload()
+    except NFCError, e:
+        print "Reading UID failed:", e.what()

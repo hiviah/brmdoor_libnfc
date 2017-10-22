@@ -4,6 +4,8 @@ import hmac
 import hashlib
 import logging
 
+import axolotl_curve25519 as curve
+
 from nfc_smartcard import NFCError
 
 
@@ -128,7 +130,7 @@ class YubikeyHMACAuthenthicator(object):
                 if not rapdu.valid or rapdu.sw() != 0x9000:
                     raise NFCError("HMAC - response SW is not 0x9000")
             except NFCError, e:
-                logging.debug("Yubikey HMAC command failed: %s" % e.what())
+                logging.info("Yubikey HMAC command failed: %s" % e.what())
                 return None
             
         if not self.hmacCheck(secretKey, challenge, rapdu.data()):
@@ -140,7 +142,62 @@ class YubikeyHMACAuthenthicator(object):
     def shutdown(self):
         """Closes connection to database"""
         self.conn.close()
-    
+
+class DesfireEd25519Authenthicator(object):
+    """
+    Reads NDEF message from Desfire and it must be signed binary value of UID
+    """
+    def __init__(self, filename, nfcReader, pubKey):
+        """
+        Connects to database by given filename and later checks UIDs
+        using the pubkey (given as binary string).
+        """
+        #again autocommit mode
+        self.conn = sqlite3.connect(filename, isolation_level=None)
+        self.nfcReader = nfcReader
+        self.pubKey = pubKey
+
+    def signatureCheck(self, uid, signature):
+        """
+        Returns true iff uid (as binary) is the message signed by signature (binary string)
+        """
+        verified = curve.verifySignature(self.pubKey, uid, signature) == 0
+        return verified
+
+
+    def checkUIDSignature(self, uid_hex):
+        """
+        Checks if UID is in database. If so, it retrieves NDEF which should be signature of the UID
+        @param uid_hex: uid to match in hex
+        @returns UidRecord instance if found, None otherwise
+        """
+        cursor = self.conn.cursor()
+        sql = "SELECT nick FROM authorized_desfires WHERE UPPER(uid_hex)=?"
+        sql_data =(uid_hex.upper(),)
+
+        cursor.execute(sql, sql_data)
+        record = cursor.fetchone()
+
+        if record is None:
+            return None
+
+        nick = record[0]
+
+        try:
+            ndefSignature = self.nfcReader.readDesfireNDEF()
+            if self.signatureCheck(uid_hex.decode("hex"), ndefSignature):
+                return UidRecord(uid_hex, nick)
+            else:
+                logging.info("Signature check failed for Desfire NDEF for UID %s", uid_hex)
+                return None
+        except NFCError, e:
+            logging.info("Desfire read NDEF failed: %s" % e.what())
+            return None
+
+    def shutdown(self):
+        """Closes connection to database"""
+        self.conn.close()
+
 #test routine
 if __name__ == "__main__":
     authenticator = UidAuthenticator("test_uids_db.sqlite")
