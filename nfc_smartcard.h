@@ -118,8 +118,17 @@ public:
      *
      * @param apdu command APDU to send
      * @param returns response APDU received from target
+     * @throws NFCError if response APDU is too long or couldn't send APDU
      */
     ResponseAPDU sendAPDU(const std::string& apdu) throw(NFCError);
+
+    /**
+     * Read NDEF message from Desfire.
+     *
+     * @returns NDEF message or empty string if there wasn't message
+     * @throws NFCError if there was problem communication with card or couldn't authenticate
+     */
+    std::string readDesfireNDEF() throw(NFCError);
 
     /** Open device explicitly. May be useful after explicit close */
     void open() throw(NFCError);
