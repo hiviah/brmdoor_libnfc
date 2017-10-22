@@ -2,7 +2,7 @@ DEFAULT_PYTHON_VERSION := $(shell python2 -c 'import platform; print "%s.%s" % p
 PYTHON_CONFIG := python$(DEFAULT_PYTHON_VERSION)-config
 PYTHON_INCLUDES := $(shell $(PYTHON_CONFIG) --includes)
 CXXFLAGS += -Wall -g $(PYTHON_INCLUDES) -fPIC -std=c++11
-LDFLAGS += -lnfc
+LDFLAGS += -lnfc -lfreefare
 OBJECTS = nfc_smartcard.o nfc_smartcard_wrap.o
 SWIG_GENERATED = nfc_smartcard_wrap.cxx nfc_smartcard.py
 PY_MODULE = _nfc_smartcard.so
