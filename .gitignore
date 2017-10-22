@@ -23,6 +23,12 @@ brmdoor_libnfc.includes
 #PyCharm
 .idea
 
+#CLion
+CMakeCache.txt
+CMakeFiles
+CMakeLists.txt
+cmake_install.cmake
+
 #Komodo IDE
 brmdoor_libnfc.kpf
 
