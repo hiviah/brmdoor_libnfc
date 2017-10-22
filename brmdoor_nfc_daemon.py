@@ -86,7 +86,7 @@ class NFCScanner(object):
         )
         self.desfireAuthenticator = DesfireEd25519Authenthicator(
             config.authDbFilename, self.nfc,
-            config.desfirePubkey
+            config.desfirePubkey.decode("hex")
         )
         #self.nfc.pollNr = 0xFF #poll indefinitely
         while True:

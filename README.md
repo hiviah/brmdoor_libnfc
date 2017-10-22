@@ -72,7 +72,8 @@ All dependencies except for wiring can be installed via:
         
   - you need to program the Desfire card to have the signature
        
-
+        ./write_signed_ndef_on_desfire.py private_key_in_hex
+        
 Finally, run the daemon:
 
         sudo python brmdoor_nfc_daemon.py brmdoor_nfc.config

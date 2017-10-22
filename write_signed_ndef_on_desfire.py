@@ -13,7 +13,7 @@ if len(sys.argv) < 2:
     print "Usage: write_signed_ndef_on_desfire.py private_key_in_hex"
     sys.exit(3)
 
-tempFile = None
+tempFd = None
 tempFname = None
 
 try:
@@ -24,23 +24,26 @@ try:
     uid_hex = hexlify(nfc.scanUID())
     key = sys.argv[1].decode("hex")
 
-    print("Got UID %s", uid_hex)
+    print "Got UID %s" % uid_hex
     signature = signUid(key, uid_hex.decode("hex"))
-    (tempFile, tempFname) = tempfile.mkstemp(dir="/tmp")
-    with tempFile:
-        tempFile.write(signature)
+    (tempFd, tempFname) = tempfile.mkstemp(dir="/tmp")
+    os.write(tempFd, signature)
+    os.close(tempFd)
+    print "Wrote signature into %s" % tempFname
 except NFCError, e:
     #this exception happens also when scanUID times out
     print("Failed to wait for Desfire card: %s" % e)
+    if tempFname:
+        os.unlink(tempFname)
     sys.exit(1)
 except Exception, e:
     print("Something went wrong when writing the signature to file:", e)
+    if tempFname:
+        os.unlink(tempFname)
     sys.exit(2)
 finally:
     nfc.close()
     nfc.unload()
-    if tempFname:
-        os.unlink(tempFname)
 
 # We'll just call the command line tools so that we don't need to copy&paste the NDEF writing code to nfc_smartcard.cpp
 print "Formatting card"
@@ -54,7 +57,7 @@ if res != 0:
     print "Creating NDEF failed"
     sys.exit(4)
 print "Writing NDEF with signature onto Desfire"
-res = os.system("mifare-desfire-create-ndef -y -i '%'" % tempFname)
+res = os.system("mifare-desfire-write-ndef -y -i %s" % tempFname)
 if res != 0:
     print "Writing NDEF failed"
     sys.exit(4)

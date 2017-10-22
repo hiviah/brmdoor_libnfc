@@ -161,6 +161,7 @@ class DesfireEd25519Authenthicator(object):
         """
         Returns true iff uid (as binary) is the message signed by signature (binary string)
         """
+        print "Signature len:", len(signature)
         verified = curve.verifySignature(self.pubKey, uid, signature) == 0
         return verified
 
