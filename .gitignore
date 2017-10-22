@@ -20,6 +20,9 @@ brmdoor_libnfc.creator.user
 brmdoor_libnfc.files
 brmdoor_libnfc.includes
 
+#PyCharm
+.idea
+
 #Komodo IDE
 brmdoor_libnfc.kpf
 
