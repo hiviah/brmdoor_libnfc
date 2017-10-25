@@ -23,3 +23,21 @@ unlocker = UnlockerWiringPi
 # lock_pin - which pin needs to be pulled high to disengage the lock (GPIO numbering)
 [UnlockerWiringPi]
 lock_pin = 17
+
+[irc]
+# enabled - True or False; rest of the options are not necessary if set to False
+# server - IRC server to connect to
+# port - IRC server port
+# nick - nickname of bot
+# password - password for the nick, may be omitted
+# channels - space separated list of channels to join
+# tls - True or False whether we should connect over TLS
+# reconnect_delay - wait this many seconds until next reconnect attempt
+enabled = True
+server = irc.freenode.net
+port = 6697
+nick = bjornbot
+password = whatevs
+channels = #test-bjornbot
+tls = True
+reconnect_delay = 300

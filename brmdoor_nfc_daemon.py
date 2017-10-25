@@ -1,12 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import sys
 import logging
 import time
 import ConfigParser
+import threading
+import irc.client
+import ssl
+import Queue
 
 from binascii import hexlify
-
+from functools import partial
 
 from nfc_smartcard import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator, DesfireEd25519Authenthicator
@@ -46,7 +50,16 @@ class BrmdoorConfig(object):
         self.logFile = self.config.get("brmdoor", "log_file")
         self.logLevel = self.convertLoglevel(self.config.get("brmdoor", "log_level"))
         self.unlocker = self.config.get("brmdoor", "unlocker")
-    
+        self.useIRC = self.config.getboolean("irc", "enabled")
+        if self.useIRC:
+            self.ircServer = self.config.get("irc", "server")
+            self.ircPort = self.config.getint("irc", "port")
+            self.ircNick = self.config.get("irc", "nick")
+            self.ircPassword = self.config.get("irc", "password") if self.config.has_option("irc", "password") else None
+            self.ircChannels = self.config.get("irc", "channels").split(" ")
+            self.ircUseTLS = self.config.getboolean("irc", "tls")
+            self.ircReconnectDelay = self.config.getint("irc", "reconnect_delay")
+
     def convertLoglevel(self, levelString):
         """Converts string 'debug', 'info', etc. into corresponding
         logging.XXX value which is returned.
@@ -61,7 +74,7 @@ class BrmdoorConfig(object):
 class NFCScanner(object):
     """Thread reading data from NFC reader"""
             
-    def __init__(self, config):
+    def __init__(self, config, msgQueue, ircThread):
         """Create worker reading UIDs from PN53x reader.
         """
         self.authenticator = UidAuthenticator(config.authDbFilename)
@@ -69,6 +82,8 @@ class NFCScanner(object):
         self.desfireAuthenticator = None
         self.unknownUidTimeoutSecs = config.unknownUidTimeoutSecs
         self.lockOpenedSecs = config.lockOpenedSecs
+        self.msgQueue = msgQueue
+        self.ircThread = ircThread
         
         unlockerClassName = config.unlocker
         unlockerClass = getattr(unlocker, unlockerClassName)
@@ -109,7 +124,17 @@ class NFCScanner(object):
                 sys.exit(2)
             except Exception:
                 logging.exception("Exception in main unlock thread")
-                
+
+    def sendIrcMessage(self, msg):
+        """
+        Send message to IRC bot. Message is dropped if bot is not connected
+        :param msg: message to be displayed in joined channels
+        """
+        if not self.ircThread:
+            return
+        if self.ircThread.getConnected():
+            self.msgQueue.put(msg)
+
     def actOnUid(self, uid_hex):
         """
         Do something with the UID scanned. Try to authenticate it against
@@ -120,6 +145,7 @@ class NFCScanner(object):
         #direct UID match
         if record is not None:
             logging.info("Unlocking for UID %s", record)
+            self.sendIrcMessage("Unlocking door")
             self.unlocker.unlock()
             return
         
@@ -128,6 +154,7 @@ class NFCScanner(object):
         
         if record is not None:
             logging.info("Unlocking after HMAC for UID %s", record)
+            self.sendIrcMessage("Unlocking door")
             self.unlocker.unlock()
             return
 
@@ -136,12 +163,100 @@ class NFCScanner(object):
 
         if record is not None:
             logging.info("Unlocking after Desfire NDEF ed25519 check for UID %s", record)
+            self.sendIrcMessage("Unlocking door")
             self.unlocker.unlock()
             return
 
         logging.info("Unknown UID %s", uid_hex)
+        self.sendIrcMessage("Denied unauthorized card")
         time.sleep(self.unknownUidTimeoutSecs)
         
+class IrcThread(threading.Thread):
+    """
+    Class for showing messages about lock events and denied/accepted cards
+    """
+    def __init__(self, config, msgQueue):
+        """
+        Create thread for IRC connection.
+
+        :param config - BrmdoorConfig object
+        :param msgQueue: Queue.Queue instance where we will get messages to show
+        """
+        self.server = config.ircServer
+        self.port = config.ircPort
+        self.nick = config.ircNick
+        self.password = config.ircPassword
+        self.channels = config.ircChannels
+        self.useSSL = config.ircUseTLS
+        self.reconnectDelay = config.ircReconnectDelay
+        self.msgQueue = msgQueue
+        self.connection = None
+        self.reactor = None
+        self.connected = False
+        self.threadLock = threading.Lock()
+
+        threading.Thread.__init__(self)
+
+    def setConnected(self, connected):
+        with self.threadLock:
+            self.connected = connected
+
+    def getConnected(self):
+        with self.threadLock:
+            return self.connected
+
+    def connect(self):
+        """
+        Connect to server.
+        :returns true if connection was successful
+        """
+        try:
+            ssl_factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
+            self.reactor = irc.client.Reactor()
+            self.connection = self.reactor.server().connect(
+                self.server,
+                self.port,
+                self.nick,
+                self.password,
+                "brmdoor-libnfc",
+                connect_factory=ssl_factory if self.useSSL else lambda sock: sock,
+            )
+
+            return True
+        except irc.client.ServerConnectionError, e:
+            logging.error("Could not connect to IRC server: %s", e)
+            return False
+
+    def onConnect(self, connection, event):
+        for channel in self.channels:
+            connection.join(channel)
+
+    def onDisconnect(self, connection, event):
+        logging.info("Disconnected, waiting for %s seconds before reconnect", self.reconnectDelay)
+        self.setConnected(False)
+        time.sleep(self.reconnectDelay)
+        self.setConnected(self.connect())
+
+    def run(self):
+        logging.debug("Starting IRC thread")
+        while True:
+            connected = self.connect()
+            logging.info("IRC connected: %s", connected)
+            self.setConnected(connected)
+            self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
+            self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
+
+            while self.getConnected():
+                self.reactor.process_once(timeout=5)
+                try:
+                    msg = self.msgQueue.get_nowait()
+                    for channel in self.channels:
+                        self.connection.privmsg(channel, msg)
+                except Queue.Empty:
+                    pass
+            else:
+                time.sleep(self.reconnectDelay)
+
 
 
 if __name__  == "__main__":
@@ -158,7 +273,14 @@ if __name__  == "__main__":
     else:
         logging.basicConfig(filename=config.logFile, level=config.logLevel,
             format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
-    
-    nfcScanner = NFCScanner(config)
+
+    ircMsgQueue = Queue.Queue()
+    ircThread = None
+    if config.useIRC:
+        ircThread = IrcThread(config, ircMsgQueue)
+        ircThread.setDaemon(True)
+        ircThread.start()
+
+    nfcScanner = NFCScanner(config, ircMsgQueue, ircThread)
     nfcScanner.run()
-    
+

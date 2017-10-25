@@ -24,7 +24,7 @@ shows four interactions with NFC smartcards:
 
 It is much more general in use than to use it as authenthicator to open door.
 
-## Building
+## Building and dependencies
 
 You need just to run `make`. Additional dependencies:
 
@@ -33,6 +33,7 @@ You need just to run `make`. Additional dependencies:
 - [python-axolotl-curve25519](https://github.com/tgalal/python-axolotl-curve25519), in Ubuntu and Debian install python-axolotl-curve25519
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
+- [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
 
 All dependencies except for wiring can be installed via:
 
