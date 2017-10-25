@@ -94,3 +94,9 @@ This daemon expects the library to be already configured to find the PN532 devic
 
 If you installed libnfc from source, the default directory might be
 `/usr/local/etc/nfc` instead of `/etc/nfc`.
+
+## Notes
+
+You could use Android Host Card Emulation to emulate a Desfire - it actually just expects one application, D2760000850101.
+
+See an [example of HCE NDEF emulation](https://github.com/TechBooster/C85-Android-4.4-Sample/blob/master/chapter08/NdefCard/src/com/example/ndefcard/NdefHostApduService.java).
