@@ -250,8 +250,7 @@ class IrcThread(threading.Thread):
                 self.reactor.process_once(timeout=5)
                 try:
                     msg = self.msgQueue.get_nowait()
-                    for channel in self.channels:
-                        self.connection.privmsg(channel, msg)
+                    self.connection.privmsg_many(self.channels, msg)
                 except Queue.Empty:
                     pass
             else:
