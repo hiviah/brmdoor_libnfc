@@ -3,6 +3,7 @@ import sqlite3
 import hmac
 import hashlib
 import logging
+import json
 
 import axolotl_curve25519 as curve
 
@@ -184,7 +185,8 @@ class DesfireEd25519Authenthicator(object):
         nick = record[0]
 
         try:
-            ndefSignature = self.nfcReader.readDesfireNDEF()
+            ndefJson = json.loads(self.nfcReader.readDesfireNDEF())
+            ndefSignature = ndefJson["brmdoorSignature"].decode("hex")
             if len(ndefSignature) != 64:
                 logging.error("NDEF signature has wrong length")
                 return None
@@ -194,7 +196,16 @@ class DesfireEd25519Authenthicator(object):
                 logging.info("Signature check failed for Desfire NDEF for UID %s", uid_hex)
                 return None
         except NFCError, e:
-            logging.info("Desfire read NDEF failed: %s" % e.what())
+            logging.error("Desfire read NDEF failed: %s", e.what())
+            return None
+        except TypeError, e:
+            logging.error("Could not decode signature from JSON: %s", e)
+            return None
+        except ValueError, e:
+            logging.error("Could not decode JSON from NDEF: %s", e)
+            return None
+        except KeyError, e:
+            logging.error("Missing signature in JSON: %s", e)
             return None
 
     def shutdown(self):

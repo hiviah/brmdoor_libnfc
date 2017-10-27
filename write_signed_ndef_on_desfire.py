@@ -27,7 +27,9 @@ try:
     print "Got UID %s" % uid_hex
     signature = signUid(key, uid_hex.decode("hex"))
     (tempFd, tempFname) = tempfile.mkstemp(dir="/tmp")
-    os.write(tempFd, signature)
+    signatureJson = '{"brmdoorSignature": "%s"}' % signature.encode("hex")
+    print "Writing signature JSON:", signatureJson
+    os.write(tempFd, signatureJson)
     os.close(tempFd)
     print "Wrote signature into %s" % tempFname
 except NFCError, e:
