@@ -59,6 +59,9 @@ class BrmdoorConfig(object):
             self.ircChannels = self.config.get("irc", "channels").split(" ")
             self.ircUseTLS = self.config.getboolean("irc", "tls")
             self.ircReconnectDelay = self.config.getint("irc", "reconnect_delay")
+        self.useOpenSwitch = self.config.getboolean("open-switch", "enabled")
+        if self.useOpenSwitch:
+            self.switchStatusFile = self.config.get("open-switch", "status_file")
 
     def convertLoglevel(self, levelString):
         """Converts string 'debug', 'info', etc. into corresponding
@@ -256,6 +259,23 @@ class IrcThread(threading.Thread):
             else:
                 time.sleep(self.reconnectDelay)
 
+class OpenSwitchThread(threading.Thread):
+    """
+    Class for watching OPEN/CLOSED switch that
+    """
+    def __init__(self, config, ircThread):
+        """
+        Create thread for IRC connection.
+
+        :param config - BrmdoorConfig object
+        :param ircThread: IrcThread through which we can set and receive current topics
+        """
+        self.statusFile = config.statusFile
+        threading.Thread.__init__(self)
+
+    def run(self):
+        while True:
+            time.sleep(1)
 
 
 if __name__  == "__main__":
