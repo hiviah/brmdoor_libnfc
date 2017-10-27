@@ -185,6 +185,9 @@ class DesfireEd25519Authenthicator(object):
 
         try:
             ndefSignature = self.nfcReader.readDesfireNDEF()
+            if len(ndefSignature) != 64:
+                logging.error("NDEF signature has wrong length")
+                return None
             if self.signatureCheck(uid_hex.decode("hex"), ndefSignature):
                 return UidRecord(uid_hex, nick)
             else:
