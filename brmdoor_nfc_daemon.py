@@ -239,6 +239,7 @@ class IrcThread(threading.Thread):
             return False
 
     def getTopic(self, channel):
+        """ TODO: this doesn't work, the implementation always returns None"""
         with self.threadLock:
             return self.connection.topic(channel)
 
@@ -320,7 +321,7 @@ class OpenSwitchThread(threading.Thread):
 
                     if self.ircThread.connected:
                         for channel in self.ircThread.channels:
-                            #TODO: this always returns None, don't know why
+                            #TODO: getTopic always returns None, the problem is in implementenation
                             topic = self.ircThread.getTopic(channel)
                             if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
                                 newTopic = strStatus
