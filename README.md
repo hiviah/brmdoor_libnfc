@@ -35,9 +35,14 @@ You need just to run `make`. Additional dependencies:
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
 
-All dependencies except for wiring can be installed via:
+All dependencies except for wiring can be installed on Ubuntu or Debian/Raspbian via:
 
-`apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig2.0`
+    apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig2.0 python-dev
+    pip install irc
+
+To build, just run make:
+
+    make
 
 ## Howto
 
@@ -95,8 +100,16 @@ This daemon expects the library to be already configured to find the PN532 devic
 If you installed libnfc from source, the default directory might be
 `/usr/local/etc/nfc` instead of `/etc/nfc`.
 
+## Known bugs
+
+* The open-switch module that changes topic based on status of GPIO switch can set status, 
+  but can't retrieve current status - not implemented in current python-irc module
+  
 ## Notes
 
 You could use Android Host Card Emulation to emulate a Desfire - it actually just expects one application, D2760000850101.
 
 See an [example of HCE NDEF emulation](https://github.com/TechBooster/C85-Android-4.4-Sample/blob/master/chapter08/NdefCard/src/com/example/ndefcard/NdefHostApduService.java).
+
+You could just modify `write_signed_ndef_on_desfire.py` to write out the JSON into a file and then put the 
+generated NDEF file into application so it will respond with it when
