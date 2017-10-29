@@ -120,7 +120,8 @@ class NFCScanner(object):
                     self.actOnUid(uid_hex)
                 else:
                     #prevent busy loop if reader goes awry
-                    time.sleep(0.3)
+                    e = threading.Event()
+                    e.wait(timeout=0.3)
             except NFCError, e:
                 #this exception happens also when scanUID times out
                 logging.debug("Failed to wait for RFID card: %s", e)
@@ -177,8 +178,9 @@ class NFCScanner(object):
 
         logging.info("Unknown UID %s", uid_hex)
         self.sendIrcMessage("Denied unauthorized card")
-        time.sleep(self.unknownUidTimeoutSecs)
-        
+        e = threading.Event()
+        e.wait(timeout=self.unknownUidTimeoutSecs)
+
 class IrcThread(threading.Thread):
     """
     Class for showing messages about lock events and denied/accepted cards
@@ -318,6 +320,7 @@ class OpenSwitchThread(threading.Thread):
 
                     if self.ircThread.connected:
                         for channel in self.ircThread.channels:
+                            #TODO: this always returns None, don't know why
                             topic = self.ircThread.getTopic(channel)
                             if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
                                 newTopic = strStatus
@@ -329,9 +332,8 @@ class OpenSwitchThread(threading.Thread):
                 pass #silently ignore non-existent file and other errors, otherwise it'd spam log
             except Exception:
                 logging.exception("Exception in open switch thread")
-            logging.info("Before sleep")
-            time.sleep(1)
-            logging.info("After sleep")
+            e = threading.Event()
+            e.wait(timeout=1)
 
 
 if __name__  == "__main__":
