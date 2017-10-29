@@ -37,7 +37,7 @@ You need just to run `make`. Additional dependencies:
 
 All dependencies except for wiring can be installed on Ubuntu or Debian/Raspbian via:
 
-    apt install libnfc-dev libfreefare-bin and libfreefare-dev python-axolotl-curve25519 swig2.0 python-dev
+    apt install libnfc-dev libfreefare-bin libfreefare-dev python-axolotl-curve25519 swig2.0 python-dev
     pip install irc
 
 To build, just run make:
