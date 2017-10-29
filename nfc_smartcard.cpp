@@ -104,6 +104,8 @@ std::string NFCDevice::scanUID() throw(NFCError)
         throw NFCError("NFC device not opened");
     }
 
+    // We release GIL because otherwise it would block other threads. Since this polling is de-facto sleep and
+    // doesn't touch any variables, it works as a language without GIL would.
     Py_BEGIN_ALLOW_THREADS
     res = nfc_initiator_poll_target(_nfcDevice, _modulations, _modulationsLen, pollNr, pollPeriod, &nt);
     Py_END_ALLOW_THREADS
