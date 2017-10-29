@@ -2,6 +2,8 @@
 #include <cassert>
 #include <memory>
 
+#include <Python.h>
+
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
 #include <freefare.h>
@@ -102,7 +104,10 @@ std::string NFCDevice::scanUID() throw(NFCError)
         throw NFCError("NFC device not opened");
     }
 
+    Py_BEGIN_ALLOW_THREADS
     res = nfc_initiator_poll_target(_nfcDevice, _modulations, _modulationsLen, pollNr, pollPeriod, &nt);
+    Py_END_ALLOW_THREADS
+
     if (res < 0) {
         throw NFCError("NFC polling error");
     }
