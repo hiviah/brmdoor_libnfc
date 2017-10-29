@@ -8,6 +8,7 @@ import threading
 import irc.client
 import ssl
 import Queue
+import re
 
 from binascii import hexlify
 from functools import partial
@@ -57,11 +58,15 @@ class BrmdoorConfig(object):
             self.ircNick = self.config.get("irc", "nick")
             self.ircPassword = self.config.get("irc", "password") if self.config.has_option("irc", "password") else None
             self.ircChannels = self.config.get("irc", "channels").split(" ")
+            if len(self.ircChannels) < 1:
+                print >> sys.stderr, "You must specify at least one channel for IRC when IRC is enabled"
+                sys.exit(1)
             self.ircUseTLS = self.config.getboolean("irc", "tls")
             self.ircReconnectDelay = self.config.getint("irc", "reconnect_delay")
-        self.useOpenSwitch = self.config.getboolean("open-switch", "enabled")
+        self.useOpenSwitch = self.config.getboolean("open_switch", "enabled")
         if self.useOpenSwitch:
-            self.switchStatusFile = self.config.get("open-switch", "status_file")
+            self.switchStatusFile = self.config.get("open_switch", "status_file")
+            self.switchOpenValue = self.config.get("open_switch", "open_value")
 
     def convertLoglevel(self, levelString):
         """Converts string 'debug', 'info', etc. into corresponding
@@ -197,6 +202,7 @@ class IrcThread(threading.Thread):
         self.reactor = None
         self.connected = False
         self.threadLock = threading.Lock()
+        self.connection = None
 
         threading.Thread.__init__(self)
 
@@ -230,6 +236,14 @@ class IrcThread(threading.Thread):
             logging.error("Could not connect to IRC server: %s", e)
             return False
 
+    def getTopic(self, channel):
+        with self.threadLock:
+            return self.connection.topic(channel)
+
+    def setTopic(self, channel, newTopic):
+        with self.threadLock:
+            return self.connection.topic(channel, newTopic)
+
     def onConnect(self, connection, event):
         for channel in self.channels:
             connection.join(channel)
@@ -240,24 +254,32 @@ class IrcThread(threading.Thread):
         time.sleep(self.reconnectDelay)
         self.setConnected(self.connect())
 
+    def onJoin(self, connection, event):
+        logging.info("Joined channel, event: %s", event)
+        connection.privmsg(self.channels[0], "brmbot-libfc starting")
+
     def run(self):
         logging.debug("Starting IRC thread")
         while True:
-            connected = self.connect()
-            logging.info("IRC connected: %s", connected)
-            self.setConnected(connected)
-            self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
-            self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
+            try:
+                connected = self.connect()
+                logging.info("IRC connected: %s", connected)
+                self.setConnected(connected)
+                self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
+                self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
+                self.connection.add_global_handler("join", partial(IrcThread.onJoin, self))
 
-            while self.getConnected():
-                self.reactor.process_once(timeout=5)
-                try:
-                    msg = self.msgQueue.get_nowait()
-                    self.connection.privmsg_many(self.channels, msg)
-                except Queue.Empty:
-                    pass
-            else:
-                time.sleep(self.reconnectDelay)
+                while self.getConnected():
+                    self.reactor.process_once(timeout=5)
+                    try:
+                        with self.threadLock:
+                            msg = self.msgQueue.get_nowait()
+                            self.connection.privmsg_many(self.channels, msg)
+                    except Queue.Empty:
+                        pass
+            except Exception:
+                logging.exception("Exception in IRC thread")
+            time.sleep(self.reconnectDelay)
 
 class OpenSwitchThread(threading.Thread):
     """
@@ -270,12 +292,46 @@ class OpenSwitchThread(threading.Thread):
         :param config - BrmdoorConfig object
         :param ircThread: IrcThread through which we can set and receive current topics
         """
-        self.statusFile = config.statusFile
+        self.statusFile = config.switchStatusFile
+        self.openValue = config.switchOpenValue
+        self.ircThread = ircThread
         threading.Thread.__init__(self)
 
     def run(self):
+        logging.info("Switch thread start")
+        if self.ircThread is None: #no point in running this thread if we can't report it anywhere
+            return
+
+        lastStatus = None #Some random value so that first time it will be registered as change
         while True:
+            try:
+                switchFile = open(self.statusFile)
+                status = switchFile.read(1)
+                switchFile.close()
+                if status != lastStatus:
+                    logging.info("Open switch status changed, new status: %s", status)
+                    lastStatus = status
+                    if status == self.openValue:
+                        strStatus = "OPEN |"
+                    else:
+                        strStatus = "CLOSED |"
+
+                    if self.ircThread.connected:
+                        for channel in self.ircThread.channels:
+                            topic = self.ircThread.getTopic(channel)
+                            if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
+                                newTopic = strStatus
+                            else:
+                                newTopic = re.sub(r"^\s*(OPEN|CLOSED) \|", strStatus, topic)
+                            self.ircThread.setTopic(channel, newTopic)
+            except (IOError, OSError):
+                logging.exception("Could not read switch status")
+                pass #silently ignore non-existent file and other errors, otherwise it'd spam log
+            except Exception:
+                logging.exception("Exception in open switch thread")
+            logging.info("Before sleep")
             time.sleep(1)
+            logging.info("After sleep")
 
 
 if __name__  == "__main__":
@@ -295,10 +351,16 @@ if __name__  == "__main__":
 
     ircMsgQueue = Queue.Queue()
     ircThread = None
+    openSwitchThread = None
+
     if config.useIRC:
         ircThread = IrcThread(config, ircMsgQueue)
         ircThread.setDaemon(True)
         ircThread.start()
+    if config.useOpenSwitch:
+        openSwitchThread = OpenSwitchThread(config, ircThread)
+        openSwitchThread.setDaemon(True)
+        openSwitchThread.start()
 
     nfcScanner = NFCScanner(config, ircMsgQueue, ircThread)
     nfcScanner.run()

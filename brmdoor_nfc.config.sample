@@ -42,10 +42,13 @@ channels = #test-bjornbot
 tls = True
 reconnect_delay = 300
 
-[open-switch]
+[open_switch]
 # Controls showing status of "OPEN/CLOSE" switch that is connected to some GPIO pin
 # Changes topic of connected IRC channels if IRC is enabled
+# There is no point in enabling this if you disabled IRC
 # enabled - True/False
 # status_file - file in sysfs that contains 1 or 0 defining the state of button
+# open_value - which value in status_file respresents the switch being in "OPEN" position, 1 character
 enabled = True
 status_file = /sys/class/gpio/gpio11/value
+open_value = 1
