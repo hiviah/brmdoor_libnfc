@@ -35,10 +35,10 @@ You need just to run `make`. Additional dependencies:
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
 
-All dependencies except for wiring can be installed on Ubuntu or Debian/Raspbian via:
+All dependencies can be installed on Ubuntu or Debian/Raspbian via:
 
     apt install libnfc-dev libfreefare-bin libfreefare-dev python-axolotl-curve25519 swig2.0 python-dev
-    pip install irc
+    pip install irc wiringpi2
 
 To build, just run make:
 
