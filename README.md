@@ -70,7 +70,7 @@ To build, just run make:
         
   - authentication using signed UID as NDEF message on Desfire:
   
-        ./brmdoor_adduser.py -c brmdoor.config -a ndef 04631982cc2280 SomeUserName"
+        ./brmdoor_adduser.py -c brmdoor_nfc.config -a ndef 04631982cc2280 SomeUserName
   
   - you need to generate Ed25519 keypair, store the private key somewhere safe and put the public in config file
   
