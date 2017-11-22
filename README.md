@@ -100,10 +100,10 @@ This daemon expects the library to be already configured to find the PN532 devic
 If you installed libnfc from source, the default directory might be
 `/usr/local/etc/nfc` instead of `/etc/nfc`.
 
-## Known bugs
+## Known bugs (TODO)
 
 * The open-switch module that changes topic based on status of GPIO switch can set status, 
-  but can't retrieve current status - not implemented in current python-irc module
+  but can't retrieve current status - [see here example how to implement](https://github.com/jaraco/irc/issues/132#issuecomment-343653533).
   
 ## Notes
 
