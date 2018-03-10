@@ -185,7 +185,9 @@ class DesfireEd25519Authenthicator(object):
         nick = record[0]
 
         try:
-            ndefJson = json.loads(self.nfcReader.readDesfireNDEF())
+            ndefMessage = self.nfcReader.readDesfireNDEF()
+            logging.debug("Read data from Desfire: %s", ndefMessage)
+            ndefJson = json.loads(ndefMessage)
             ndefSignature = ndefJson["brmdoorSignature"].decode("hex")
             if len(ndefSignature) != 64:
                 logging.error("NDEF signature has wrong length")
