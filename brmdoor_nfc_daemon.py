@@ -57,10 +57,7 @@ class BrmdoorConfig(object):
             self.ircPort = self.config.getint("irc", "port")
             self.ircNick = self.config.get("irc", "nick")
             self.ircPassword = self.config.get("irc", "password") if self.config.has_option("irc", "password") else None
-            self.ircChannels = self.config.get("irc", "channels").split(" ")
-            if len(self.ircChannels) < 1:
-                print >> sys.stderr, "You must specify at least one channel for IRC when IRC is enabled"
-                sys.exit(1)
+            self.ircChannel = self.config.get("irc", "channel")
             self.ircUseTLS = self.config.getboolean("irc", "tls")
             self.ircReconnectDelay = self.config.getint("irc", "reconnect_delay")
         self.useOpenSwitch = self.config.getboolean("open_switch", "enabled")
@@ -181,6 +178,57 @@ class NFCScanner(object):
         e = threading.Event()
         e.wait(timeout=self.unknownUidTimeoutSecs)
 
+class BrmdoorIrcClient(irc.client.SimpleIRCClient):
+    def __init__(self, server, port, nick, password, channel):
+        irc.client.SimpleIRCClient.__init__(self)
+        self.channel = channel
+        self.topic = None
+        self.server = server
+        self.port = port
+        self.nick = nick
+        self.password = password
+
+    def on_welcome(self, connection, event):
+        if irc.client.is_channel(self.channel):
+            connection.join(self.channel)
+
+    def on_pubmsg(self, connection, event):
+        connection.topic(self.channel)
+
+    def on_currenttopic(self, connection, event):
+        self.topic = event.arguments[1]
+
+    def on_notopic(self, connection, event):
+        self.topic = ""
+
+    def on_disconnect(self, connection, event):
+        time.sleep(1)
+        self.do_connect()
+
+    def do_connect(self):
+        """
+        Connect to server.
+        :returns true if connection was successful
+        """
+        try:
+            ssl_factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
+            self.connect(
+                self.server,
+                self.port,
+                self.nick,
+                self.password,
+                "brmdoor-libnfc",
+                connect_factory=ssl_factory if self.useSSL else lambda sock: sock,
+            )
+
+            return True
+        except irc.client.ServerConnectionError, e:
+            logging.error("Could not connect to IRC server: %s", e)
+            return False
+
+
+
+
 class IrcThread(threading.Thread):
     """
     Class for showing messages about lock events and denied/accepted cards
@@ -215,33 +263,6 @@ class IrcThread(threading.Thread):
     def getConnected(self):
         with self.threadLock:
             return self.connected
-
-    def connect(self):
-        """
-        Connect to server.
-        :returns true if connection was successful
-        """
-        try:
-            ssl_factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
-            self.reactor = irc.client.Reactor()
-            self.connection = self.reactor.server().connect(
-                self.server,
-                self.port,
-                self.nick,
-                self.password,
-                "brmdoor-libnfc",
-                connect_factory=ssl_factory if self.useSSL else lambda sock: sock,
-            )
-
-            return True
-        except irc.client.ServerConnectionError, e:
-            logging.error("Could not connect to IRC server: %s", e)
-            return False
-
-    def getTopic(self, channel):
-        """ TODO: this doesn't work, the implementation always returns None"""
-        with self.threadLock:
-            return self.connection.topic(channel)
 
     def setTopic(self, channel, newTopic):
         with self.threadLock:
