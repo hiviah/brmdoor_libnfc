@@ -277,8 +277,8 @@ class IrcThread(threading.Thread):
                 self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
                 self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
                 self.connection.add_global_handler("join", partial(IrcThread.onJoin, self))
-                self.connection.add_global_handler("topic", partial(IrcThread.onTopic, self))
-                self.connection.add_global_handler("on_topic", partial(IrcThread.onTopic, self))
+                # Topic handler requires sadly completely different API to retrieve topic
+                # see https://github.com/jaraco/irc/issues/132
 
                 while self.getConnected():
                     self.reactor.process_once(timeout=5)
