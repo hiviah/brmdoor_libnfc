@@ -258,8 +258,14 @@ class IrcThread(threading.Thread):
         self.setConnected(self.connect())
 
     def onJoin(self, connection, event):
-        logging.info("Joined channel, event: %s", event)
-        connection.privmsg(self.channels[0], "brmbot-libfc starting")
+        nick, _ = event.source.split("!", 2)
+        if (nick == config.ircNick):
+            logging.info("Joined channel, event: %s", event)
+        logging.debug("join event - source %s, target: %s, type: %s", event.source, event.target, event.type)
+        #connection.privmsg(self.channels[0], "brmbot-libfc starting")
+
+    def onTopic(self, connection, event):
+        logging.debug("topic event - source %s, target: %s, type: %s", event.source, event.target, event.type)
 
     def run(self):
         logging.debug("Starting IRC thread")
@@ -271,6 +277,8 @@ class IrcThread(threading.Thread):
                 self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
                 self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
                 self.connection.add_global_handler("join", partial(IrcThread.onJoin, self))
+                self.connection.add_global_handler("topic", partial(IrcThread.onTopic, self))
+                self.connection.add_global_handler("on_topic", partial(IrcThread.onTopic, self))
 
                 while self.getConnected():
                     self.reactor.process_once(timeout=5)
