@@ -2,6 +2,7 @@
 
 import sys
 import logging
+import logging.handlers
 import time
 import ConfigParser
 import threading
@@ -352,13 +353,17 @@ if __name__  == "__main__":
         sys.exit(1)
     
     config = BrmdoorConfig(sys.argv[1])
-    
+    fmt="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]"
+
     if config.logFile == "-":
-        logging.basicConfig(stream=sys.stderr, level=config.logLevel,
-            format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
+        logging.basicConfig(stream=sys.stderr, level=config.logLevel, format=fmt)
     else:
-        logging.basicConfig(filename=config.logFile, level=config.logLevel,
-            format="%(asctime)s %(levelname)s %(message)s [%(pathname)s:%(lineno)d]")
+        handler = logging.handlers.RotatingFileHandler(filename=config.logFile, maxBytes=1000000, backupCount=5)
+        handler.setLevel(config.logLevel)
+        handler.setFormatter(logging.Formatter(fmt))
+        mainLogger = logging.getLogger('')
+        mainLogger.addHandler(handler)
+        mainLogger.setLevel(config.logLevel)
 
     ircMsgQueue = Queue.Queue()
     ircThread = None
