@@ -373,10 +373,11 @@ if __name__  == "__main__":
         ircThread = IrcThread(config, ircMsgQueue)
         ircThread.setDaemon(True)
         ircThread.start()
-    if config.useOpenSwitch:
-        openSwitchThread = OpenSwitchThread(config, ircThread)
-        openSwitchThread.setDaemon(True)
-        openSwitchThread.start()
+    # Disable for now, topic is not working properly
+    # if config.useOpenSwitch:
+    #     openSwitchThread = OpenSwitchThread(config, ircThread)
+    #     openSwitchThread.setDaemon(True)
+    #     openSwitchThread.start()
 
     nfcScanner = NFCScanner(config, ircMsgQueue, ircThread)
     nfcScanner.run()
