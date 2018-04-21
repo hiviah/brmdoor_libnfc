@@ -100,6 +100,12 @@ This daemon expects the library to be already configured to find the PN532 devic
 If you installed libnfc from source, the default directory might be
 `/usr/local/etc/nfc` instead of `/etc/nfc`.
 
+## Conflicts with other running software - pcscd, pn533 kernel modules
+
+If you have `pcscd` running, it will take over the reader and you can't use it. Kill/stop pcscd service/process if running.
+
+Similarly, you have to blacklist `pn533` and `pn533_usb` kernel modules (usually in a file like `/etc/modprobe.d/blacklist.conf`).
+
 ## Known bugs (TODO)
 
 * The open-switch module that changes topic based on status of GPIO switch can set status, 
