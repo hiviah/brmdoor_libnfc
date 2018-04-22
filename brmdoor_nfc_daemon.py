@@ -18,6 +18,8 @@ from nfc_smartcard import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator, DesfireEd25519Authenthicator
 import unlocker
 
+# Map request to change channel's topic to its new prefix. Prefix and rest are delimited with |
+# Channel prefix must include the | character at end, e.g. "OPEN |" or "CLOSED |"
 channelPrefixMap = {}
 
 class BrmdoorConfigError(ConfigParser.Error):
@@ -137,6 +139,7 @@ class NFCScanner(object):
             except Exception:
                 logging.exception("Exception in main unlock thread")
             logging.info("Request topic")
+            channelPrefixMap[self.ircThread.channels[0]] = "OPEN |"
             self.ircThread.getTopic(self.ircThread.channels[0])
 
     def sendIrcMessage(self, msg):
@@ -275,6 +278,18 @@ class IrcThread(threading.Thread):
         topic = event.arguments[1]
         logging.info("Current topic: channel %s, topic %s", channel, topic)
         logging.info("Topic event - source %s, target: %s, type: %s", event.source, event.target, event.type)
+        # if change was requested, update channel topic
+        if channelPrefixMap.get(channel):
+            #update topic part before |, or replace entirely if | is not present
+            topicParts = topic.split("|", 1)
+            restOfTopic = ""
+            if (len(topicParts) > 1):
+                restOfTopic = topicParts[1]
+
+            newTopic = channelPrefixMap[channel] + restOfTopic
+            logging.info("Setting new topic for channel %s: %s", channel, newTopic)
+            self.setTopic(channel, newTopic)
+            del channelPrefixMap[channel] # remove request
 
     def onNoTopic(self, connection, event):
         channel = event.arguments[0]
