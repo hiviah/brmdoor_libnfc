@@ -226,6 +226,7 @@ class IrcThread(threading.Thread):
         :returns true if connection was successful
         """
         try:
+            logging.info("IRC connect attempt")
             ssl_factory = irc.connection.Factory(wrapper=ssl.wrap_socket)
             self.reactor = irc.client.Reactor()
             self.connection = self.reactor.server().connect(
@@ -237,6 +238,7 @@ class IrcThread(threading.Thread):
                 connect_factory=ssl_factory if self.useSSL else lambda sock: sock,
             )
 
+            logging.info("IRC connect successful")
             return True
         except irc.client.ServerConnectionError, e:
             logging.error("Could not connect to IRC server: %s", e)
@@ -252,6 +254,7 @@ class IrcThread(threading.Thread):
             return self.connection.topic(channel, newTopic)
 
     def onConnect(self, connection, event):
+        logging.info("Joining channels: %s", self.channels)
         for channel in self.channels:
             connection.join(channel)
 
@@ -259,7 +262,9 @@ class IrcThread(threading.Thread):
         logging.info("Disconnected, waiting for %s seconds before reconnect", self.reconnectDelay)
         self.setConnected(False)
         time.sleep(self.reconnectDelay)
-        self.setConnected(self.connect())
+        reconnected = self.connect()
+        logging.info("IRC reconnect attempt success: %s", reconnected)
+        self.setConnected(reconnected)
 
     def onJoin(self, connection, event):
         nick, _ = event.source.split("!", 2)
