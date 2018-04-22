@@ -9,7 +9,6 @@ import threading
 import irc.client
 import ssl
 import Queue
-import re
 
 from binascii import hexlify
 from functools import partial
@@ -138,9 +137,6 @@ class NFCScanner(object):
                 sys.exit(2)
             except Exception:
                 logging.exception("Exception in main unlock thread")
-            logging.info("Request topic")
-            channelPrefixMap[self.ircThread.channels[0]] = "OPEN |"
-            self.ircThread.getTopic(self.ircThread.channels[0])
 
     def sendIrcMessage(self, msg):
         """
@@ -349,9 +345,8 @@ class OpenSwitchThread(threading.Thread):
         lastStatus = None #Some random value so that first time it will be registered as change
         while True:
             try:
-                switchFile = open(self.statusFile)
-                status = switchFile.read(1)
-                switchFile.close()
+                with open(self.statusFile) as switchFile:
+                    status = switchFile.read().rstrip()
                 if status != lastStatus:
                     logging.info("Open switch status changed, new status: %s", status)
                     lastStatus = status
@@ -361,18 +356,16 @@ class OpenSwitchThread(threading.Thread):
                         strStatus = "CLOSED |"
 
                     if self.ircThread.connected:
-                        with self.ircThread.threadLock:
-                            for channel in self.ircThread.channels:
-                                #TODO: getTopic always returns None, the problem is in implementenation
-                                topic = self.ircThread.getTopic(channel)
-                                if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
-                                    newTopic = strStatus
-                                else:
-                                    newTopic = re.sub(r"^\s*(OPEN|CLOSED) \|", strStatus, topic)
-                                self.ircThread.setTopic(channel, newTopic)
+                        for channel in self.ircThread.channels:
+                            logging.info("Request topic for channel %s with intention to change it, prefix %s",
+                                         channel, strStatus)
+                            channelPrefixMap[channel] = strStatus
+                            self.ircThread.getTopic(channel)
             except (IOError, OSError):
-                logging.exception("Could not read switch status")
-                pass #silently ignore non-existent file and other errors, otherwise it'd spam log
+                logging.debug("Could not read switch status file %s", self.statusFile)
+                e = threading.Event()
+                e.wait(timeout=5)
+                pass #just log the error, but don't spam IRC
             except Exception:
                 logging.exception("Exception in open switch thread")
             e = threading.Event()

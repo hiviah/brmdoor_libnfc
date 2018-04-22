@@ -48,8 +48,19 @@ reconnect_delay = 300
 # There is no point in enabling this if you disabled IRC
 # Still has one bug - python-irc won't retrieve properly topic
 # enabled - True/False
-# status_file - file in sysfs that contains 1 or 0 defining the state of button
-# open_value - which value in status_file respresents the switch being in "OPEN" position, 1 character
+# status_file - file that contains value of the button, may end with newline (you probably want something in /sys fs)
+# open_value - which value in status_file respresents the switch being in "OPEN" position
+#
+# Note: for use with Raspberry Pi, to read from GPIO in sysfs, you need to enable the PIN in input mode before starting
+# this daemon, e.g. with GPIO 11 as an example (note that there are 2 numbering PIN schemes):
+#    #!/bin/bash
+#    export PIN=11
+#
+#    if [ '!' -d /sys/class/gpio/gpio$PIN ]; then
+#        echo $PIN > /sys/class/gpio/export
+#        echo in > /sys/class/gpio/gpio$PIN/direction
+#    fi
+
 enabled = False
 status_file = /sys/class/gpio/gpio11/value
 open_value = 1
