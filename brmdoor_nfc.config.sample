@@ -49,10 +49,10 @@ reconnect_delay = 300
 # Still has one bug - python-irc won't retrieve properly topic
 # enabled - True/False
 # status_file - file that contains value of the button, may end with newline (you probably want something in /sys fs)
-# open_value - which value in status_file respresents the switch being in "OPEN" position
+# open_value - which value in status_file represents the switch being in "OPEN" position, anything else is considered closed
 #
 # Note: for use with Raspberry Pi, to read from GPIO in sysfs, you need to enable the PIN in input mode before starting
-# this daemon, e.g. with GPIO 11 as an example (note that there are 2 numbering PIN schemes):
+# brmdoor_nfc_daemon.py, e.g. with GPIO 11 as an example (note that there are 2 numbering PIN schemes):
 #    #!/bin/bash
 #    export PIN=11
 #
