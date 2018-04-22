@@ -18,6 +18,8 @@ from nfc_smartcard import NFCDevice, NFCError
 from brmdoor_authenticator import UidAuthenticator, YubikeyHMACAuthenthicator, DesfireEd25519Authenthicator
 import unlocker
 
+channelPrefixMap = {}
+
 class BrmdoorConfigError(ConfigParser.Error):
     """
     Signifies that config has missing or bad values.
@@ -134,6 +136,8 @@ class NFCScanner(object):
                 sys.exit(2)
             except Exception:
                 logging.exception("Exception in main unlock thread")
+            logging.info("Request topic")
+            self.ircThread.getTopic(self.ircThread.channels[0])
 
     def sendIrcMessage(self, msg):
         """
@@ -240,9 +244,9 @@ class IrcThread(threading.Thread):
             return False
 
     def getTopic(self, channel):
-        """ TODO: this doesn't work, the implementation always returns None"""
+        """ Request topic. You need to wait in currenttopic callback for result """
         with self.threadLock:
-            return self.connection.topic(channel)
+            self.connection.topic(channel)
 
     def setTopic(self, channel, newTopic):
         with self.threadLock:
@@ -266,7 +270,17 @@ class IrcThread(threading.Thread):
         #connection.privmsg(self.channels[0], "brmbot-libfc starting")
 
     def onTopic(self, connection, event):
-        logging.debug("topic event - source %s, target: %s, type: %s", event.source, event.target, event.type)
+        global channelPrefixMap
+        channel = event.arguments[0]
+        topic = event.arguments[1]
+        logging.info("Current topic: channel %s, topic %s", channel, topic)
+        logging.info("Topic event - source %s, target: %s, type: %s", event.source, event.target, event.type)
+
+    def onNoTopic(self, connection, event):
+        channel = event.arguments[0]
+        topic = event.arguments[1]
+        logging.info("No topic: channel %s, topic %s", channel, topic)
+        logging.info("No topic event - source %s, target: %s, type: %s", event.source, event.target, event.type)
 
     def run(self):
         logging.debug("Starting IRC thread")
@@ -278,6 +292,9 @@ class IrcThread(threading.Thread):
                 self.connection.add_global_handler("welcome", partial(IrcThread.onConnect, self))
                 self.connection.add_global_handler("disconnect", partial(IrcThread.onDisconnect, self))
                 self.connection.add_global_handler("join", partial(IrcThread.onJoin, self))
+                self.reactor.server().add_global_handler("notopic", partial(IrcThread.onNoTopic, self))
+                self.reactor.server().add_global_handler("currenttopic", partial(IrcThread.onTopic, self))
+
                 # Topic handler requires sadly completely different API to retrieve topic
                 # see https://github.com/jaraco/irc/issues/132
 
@@ -329,14 +346,15 @@ class OpenSwitchThread(threading.Thread):
                         strStatus = "CLOSED |"
 
                     if self.ircThread.connected:
-                        for channel in self.ircThread.channels:
-                            #TODO: getTopic always returns None, the problem is in implementenation
-                            topic = self.ircThread.getTopic(channel)
-                            if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
-                                newTopic = strStatus
-                            else:
-                                newTopic = re.sub(r"^\s*(OPEN|CLOSED) \|", strStatus, topic)
-                            self.ircThread.setTopic(channel, newTopic)
+                        with self.ircThread.threadLock:
+                            for channel in self.ircThread.channels:
+                                #TODO: getTopic always returns None, the problem is in implementenation
+                                topic = self.ircThread.getTopic(channel)
+                                if not topic or not re.match(r"^\s*(OPEN|CLOSED) \|", topic):
+                                    newTopic = strStatus
+                                else:
+                                    newTopic = re.sub(r"^\s*(OPEN|CLOSED) \|", strStatus, topic)
+                                self.ircThread.setTopic(channel, newTopic)
             except (IOError, OSError):
                 logging.exception("Could not read switch status")
                 pass #silently ignore non-existent file and other errors, otherwise it'd spam log
@@ -373,11 +391,10 @@ if __name__  == "__main__":
         ircThread = IrcThread(config, ircMsgQueue)
         ircThread.setDaemon(True)
         ircThread.start()
-    # Disable for now, topic is not working properly
-    # if config.useOpenSwitch:
-    #     openSwitchThread = OpenSwitchThread(config, ircThread)
-    #     openSwitchThread.setDaemon(True)
-    #     openSwitchThread.start()
+    if config.useOpenSwitch:
+        openSwitchThread = OpenSwitchThread(config, ircThread)
+        openSwitchThread.setDaemon(True)
+        openSwitchThread.start()
 
     nfcScanner = NFCScanner(config, ircMsgQueue, ircThread)
     nfcScanner.run()
