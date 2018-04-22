@@ -213,10 +213,12 @@ class IrcThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def setConnected(self, connected):
+        """ Set the connection status (result) of last connection attempt"""
         with self.threadLock:
             self.connected = connected
 
     def getConnected(self):
+        """ Return whether we are connected to IRC"""
         with self.threadLock:
             return self.connected
 
@@ -250,15 +252,21 @@ class IrcThread(threading.Thread):
             self.connection.topic(channel)
 
     def setTopic(self, channel, newTopic):
+        """ Change topic for a channel. If not connected yet, won't queue the topic change request. """
         with self.threadLock:
             return self.connection.topic(channel, newTopic)
 
     def onConnect(self, connection, event):
+        """ Callback when IRC server is connected. Joins channels specified in config. """
         logging.info("Joining channels: %s", self.channels)
         for channel in self.channels:
             connection.join(channel)
 
     def onDisconnect(self, connection, event):
+        """
+        Disconnect handler that attempts reconnect.
+        TODO: investigate reconnect and channel re-join behavior upon netsplits.
+        """
         logging.info("Disconnected, waiting for %s seconds before reconnect", self.reconnectDelay)
         self.setConnected(False)
         time.sleep(self.reconnectDelay)
@@ -267,6 +275,7 @@ class IrcThread(threading.Thread):
         self.setConnected(reconnected)
 
     def onJoin(self, connection, event):
+        """ Callback when channel is joined """
         nick, _ = event.source.split("!", 2)
         if (nick == config.ircNick):
             logging.info("Joined channel, event: %s", event)
@@ -274,6 +283,10 @@ class IrcThread(threading.Thread):
         #connection.privmsg(self.channels[0], "brmbot-libfc starting")
 
     def onTopic(self, connection, event):
+        """
+        Callback when we see IRC topic message. It can be caused by us or other users in channel.
+        Check if there was request to change topic and update it.
+        """
         global channelPrefixMap
         channel = event.arguments[0]
         topic = event.arguments[1]
@@ -293,6 +306,7 @@ class IrcThread(threading.Thread):
             del channelPrefixMap[channel] # remove request
 
     def onNoTopic(self, connection, event):
+        """ Callback on empty topic. I couldn't trigger this, so it's untested. """
         channel = event.arguments[0]
         topic = event.arguments[1]
         logging.info("No topic: channel %s, topic %s", channel, topic)
