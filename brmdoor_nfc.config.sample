@@ -46,7 +46,6 @@ reconnect_delay = 300
 # Controls showing status of "OPEN/CLOSE" switch that is connected to some GPIO pin
 # Changes topic of connected IRC channels if IRC is enabled
 # There is no point in enabling this if you disabled IRC
-# Still has one bug - python-irc won't retrieve properly topic
 # enabled - True/False
 # status_file - file that contains value of the button, may end with newline (you probably want something in /sys fs)
 # open_value - which value in status_file represents the switch being in "OPEN" position, anything else is considered closed
