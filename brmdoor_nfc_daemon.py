@@ -273,6 +273,14 @@ class IrcThread(threading.Thread):
         reconnected = self.connect()
         logging.info("IRC reconnect attempt success: %s", reconnected)
         self.setConnected(reconnected)
+        if reconnected:
+            try:
+                logging.info("Rejoining channels: %s", self.channels)
+                for channel in self.channels:
+                    self.connection.join(channel)
+            except:
+                logging.exception("Exception when rejoining channels")
+
 
     def onJoin(self, connection, event):
         """ Callback when channel is joined """
