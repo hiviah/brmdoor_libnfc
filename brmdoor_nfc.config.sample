@@ -20,7 +20,9 @@ unlocker = UnlockerWiringPi
 [Unlocker]
 
 # Config for wiringPi-based unlocker
-# lock_pin - which pin needs to be pulled high to disengage the lock (GPIO numbering)
+# lock_pin - which pin needs to be pulled high to disengage the lock (BCM GPIO numbering)
+# Documentation on BCM GPIO numbering - https://projects.drogon.net/raspberry-pi/wiringpi/pins/
+# Screenshot from the page included in file gpio_vs_wiringpi_numbering_scheme.png
 [UnlockerWiringPi]
 lock_pin = 17
 
@@ -51,15 +53,20 @@ reconnect_delay = 300
 # open_value - which value in status_file represents the switch being in "OPEN" position, anything else is considered closed
 #
 # Note: for use with Raspberry Pi, to read from GPIO in sysfs, you need to enable the PIN in input mode before starting
-# brmdoor_nfc_daemon.py, e.g. with GPIO 11 as an example (note that there are 2 numbering PIN schemes):
-#    #!/bin/bash
-#    export PIN=11
+# brmdoor_nfc_daemon.py, e.g. with GPIO 22 as an example (note that there are 2 numbering PIN schemes, see UnlockerWiringPi
+# section above). If you have just a simple switch, you will need to set up a pullup on the input PIN, connect the other
+# wire to ground and set open_value to 0 (i.e. when switch is connected, input PIN is connected to ground, otherwise pulled up to 1):
 #
-#    if [ '!' -d /sys/class/gpio/gpio$PIN ]; then
-#        echo $PIN > /sys/class/gpio/export
-#        echo in > /sys/class/gpio/gpio$PIN/direction
-#    fi
+#   #!/bin/bash
+#   export PIN=22
+#
+#   if [ '!' -d /sys/class/gpio/gpio$PIN ]; then
+#       echo $PIN > /sys/class/gpio/export
+#       echo in > /sys/class/gpio/gpio$PIN/direction
+#   fi
+#
+#   python -c "import wiringpi; wiringpi.wiringPiSetupGpio(); wiringpi.pinMode($PIN, wiringpi.INPUT); wiringpi.pullUpDnControl($PIN, wiringpi.PUD_UP)"
 
 enabled = False
-status_file = /sys/class/gpio/gpio11/value
-open_value = 1
+status_file = /sys/class/gpio/gpio22/value
+open_value = 0
