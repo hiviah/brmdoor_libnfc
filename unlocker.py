@@ -34,7 +34,7 @@ class UnlockerWiringPi(Unlocker):
     """
 
     def __init__(self, config):
-        import wiringpi2 as wiringpi
+        import wiringpi
         Unlocker.__init__(self, config)
         wiringpi.wiringPiSetupGpio() # pin numbers follow P1 GPIO header
         self.lockPin = self.config.getint("UnlockerWiringPi", "lock_pin")
@@ -43,7 +43,7 @@ class UnlockerWiringPi(Unlocker):
     def unlock(self):
         """Unlocks lock at configured pin by pulling it high.
         """
-        import wiringpi2 as wiringpi
+        import wiringpi
         wiringpi.digitalWrite(self.lockPin, 1)
         time.sleep(self.lockOpenedSecs)
         wiringpi.digitalWrite(self.lockPin, 0)
@@ -53,6 +53,6 @@ class UnlockerWiringPi(Unlocker):
         Lock the lock back. Meant to be used when program is shut down
         so that lock is not left disengaged.
         """
-        import wiringpi2 as wiringpi
+        import wiringpi
         wiringpi.digitalWrite(self.lockPin, 0)
 
