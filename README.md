@@ -106,10 +106,38 @@ If you have `pcscd` running, it will take over the reader and you can't use it. 
 
 Similarly, you have to blacklist `pn533` and `pn533_usb` kernel modules (usually in a file like `/etc/modprobe.d/blacklist.conf`).
 
+## Startup with systemd and GNU screen
+
+Example of startup unit for systemd, put in `/etc/systemd/system/brmdoor.service` and this repo cloned in `/root/brmdoor_libnfc`:
+
+    [Unit]
+    Description=brmdoor
+     
+    [Service]
+    Type=forking
+    User=root
+    ExecStart=/usr/bin/screen -L -d -m -S brmdoor
+    WorkingDirectory= /root/brmdoor_libnfc/
+     
+    [Install]
+    WantedBy=multi-user.target
+
+
+After adding the service file, run `systemctl daemon-reload` to notify systemd that unit was added. 
+To enable automatic startup, use `systemctl enable brmdoor.service`.
+
+A `/root/.screenrc` file that will run the daemon in detached screen:
+
+    autodetach on
+    startup_message off 
+
+    screen -t brmdoor 0 /root/brmdoor_libnfc/brmdoor_start.sh
+
+
 ## Known bugs (TODO)
 
-* The open-switch module that changes topic based on status of GPIO switch can set status, 
-  but can't retrieve current status - [see here example how to implement](https://github.com/jaraco/irc/issues/132#issuecomment-343653533).
+* IRC disconnect is sometimes detected late, e.g. when trying to send message that door was open. This
+  causes the message to be lost, but the reconnect will kick in
   
 ## Notes
 
