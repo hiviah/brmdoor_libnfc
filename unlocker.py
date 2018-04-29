@@ -36,9 +36,11 @@ class UnlockerWiringPi(Unlocker):
     def __init__(self, config):
         import wiringpi
         Unlocker.__init__(self, config)
-        wiringpi.wiringPiSetupGpio() # pin numbers follow P1 GPIO header
+        # PIN numbers follow P1 header BCM GPIO numbering, see https://projects.drogon.net/raspberry-pi/wiringpi/pins/
+        # Local copy of the P1 in repo mapping see gpio_vs_wiringpi_numbering_scheme.png.
+        wiringpi.wiringPiSetupGpio()
         self.lockPin = self.config.getint("UnlockerWiringPi", "lock_pin")
-        wiringpi.pinMode(self.lockPin, 1) #output
+        wiringpi.pinMode(self.lockPin, wiringpi.OUTPUT) #output
     
     def unlock(self):
         """Unlocks lock at configured pin by pulling it high.
