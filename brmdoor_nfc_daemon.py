@@ -418,6 +418,8 @@ if __name__  == "__main__":
         mainLogger.addHandler(handler)
         mainLogger.setLevel(config.logLevel)
 
+    logging.info("Starting brmdoor-libnfc")
+
     ircMsgQueue = Queue.Queue()
     ircThread = None
     openSwitchThread = None
