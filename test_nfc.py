@@ -47,7 +47,7 @@ apdu_test = "desfire-ndef4"
 if len(sys.argv) > 1:
     apdu_test = sys.argv[1]
 
-print "Available tests: %s" % ", ".join(sorted(tests.keys() + "desfire-ndef4")) #desfire-ndef4 has a bit postprocessing
+print "Available tests: %s" % ", ".join(sorted(tests.keys() + ["desfire-ndef4"])) #desfire-ndef4 has a bit postprocessing
 print "Selected test: %s" % apdu_test
 
 # select apdus according to test name
