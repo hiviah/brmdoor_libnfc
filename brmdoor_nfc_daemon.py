@@ -280,6 +280,11 @@ class IrcThread(threading.Thread):
                     self.connection.join(channel)
             except:
                 logging.exception("Exception when rejoining channels")
+            try:
+                self.reactor.server().add_global_handler("notopic", partial(IrcThread.onNoTopic, self))
+                self.reactor.server().add_global_handler("currenttopic", partial(IrcThread.onTopic, self))
+            except:
+                logging.exception("Exception while reassigning topic handlers")
 
 
     def onJoin(self, connection, event):
