@@ -99,11 +99,13 @@ public:
     virtual ~NFCDevice();
 
     /** 
-     * Poll until a ISO14443A card is in the field and returns its UID.
+     * Read UID of a card in field. If multiple cards are found, return UID of first one.
+     *
+     * If you are polling for cards with this, include some sleep in-between the calls (e.g. 0.1 sec).
      * 
      * @returns binary string containing UID or empty if non-supported card
      *          present in reader field
-     * @throws NFCError if polling failed
+     * @throws NFCError if no cards in reader's field
      */
     std::string scanUID() throw(NFCError);
     
