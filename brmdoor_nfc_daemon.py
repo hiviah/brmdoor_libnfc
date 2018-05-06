@@ -127,8 +127,10 @@ class NFCScanner(object):
                     e = threading.Event()
                     e.wait(timeout=0.3)
             except NFCError, e:
-                #this exception happens also when scanUID times out
-                logging.debug("Failed to wait for RFID card: %s", e)
+                #this exception happens also when scanUID finds no cards
+                logging.debug("Failed to find RFID cards in reader's field: %s", e)
+                e = threading.Event()
+                e.wait(timeout=0.2)
             except KeyboardInterrupt:
                 logging.info("Exiting on keyboard interrupt")
                 self.nfc.close()
