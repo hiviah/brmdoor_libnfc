@@ -88,6 +88,6 @@ spaceapi_sftp_host = some.fqdn.com
 spaceapi_sftp_port = 22
 spaceapi_sftp_username = brmdoor-web
 spaceapi_sftp_key = /path/to/key
-spaceapi_dest_filen= /path/on/target/host/to/dest/file
+spaceapi_dest_file = /path/on/target/host/to/dest/file
 spaceapi_template_file = /full/path/to/spaceapi_template.json
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import sys
+import os.path
 import logging
 import logging.handlers
 import time
@@ -9,6 +10,8 @@ import threading
 import irc.client
 import ssl
 import Queue
+import json
+import tempfile
 
 from binascii import hexlify
 from functools import partial
@@ -77,7 +80,7 @@ class BrmdoorConfig(object):
             self.sftpPort= self.config.getint("open_switch", "spaceapi_sftp_port")
             self.sftpUsername = self.config.get("open_switch", "spaceapi_sftp_username")
             self.sftpKey = self.config.get("open_switch", "spaceapi_sftp_key")
-            self.sftpDestFile = self.config.get("open_switch", "spaceapi_sftp_key")
+            self.sftpDestFile = self.config.get("open_switch", "spaceapi_dest_file")
             self.sftpTemplateFile = self.config.get("open_switch", "spaceapi_template_file")
 
     def convertLoglevel(self, levelString):
@@ -369,7 +372,31 @@ class SpaceAPIUploader(object):
     """
 
     def __init__(self, config):
-        pass
+        """ Create uploader with store settings, not yet connected."""
+        self.config = config
+
+    def upload(self, isOpen):
+        """
+        Upload status via SFTP. Current timestamp will be added as last change.
+
+        :param isOpen - whether space is opened.
+        :raises paramiko.ssh_exception.SSHException when upload fails (timeout, can't connect, host key mismatch...)
+        """
+        import pysftp
+        dirname, targetFname = os.path.split(self.config.sftpDestFile)
+
+        spaceApiJson = json.load(file("spaceapi_template.json"))
+        spaceApiJson["state"] = {"open": True, "lastchange": time.time()}
+
+        with tempfile.NamedTemporaryFile() as tf:
+            json.dump(spaceApiJson, tf)
+            localFilename = tf.name
+            with pysftp.Connection(self.config.sftpHost, username=self.config.sftpUsername, port=self.config.sftpPort,
+                private_key=self.config.sftpKey) as sftp:
+                sftp.timeout = 30
+                with sftp.cd(dirname):
+                    sftp.put(localFilename, remotepath=targetFname)
+
 
 class OpenSwitchThread(threading.Thread):
     """
