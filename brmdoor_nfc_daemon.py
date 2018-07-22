@@ -389,11 +389,12 @@ class SpaceAPIUploader(object):
         spaceApiJson["state"] = {"open": True, "lastchange": time.time()}
 
         with tempfile.NamedTemporaryFile() as tf:
-            json.dump(spaceApiJson, tf)
+            json.dump(spaceApiJson, tf, indent=4, ensure_ascii=True, encoding='utf-8')
+            tf.flush()
             localFilename = tf.name
             with pysftp.Connection(self.config.sftpHost, username=self.config.sftpUsername, port=self.config.sftpPort,
                 private_key=self.config.sftpKey) as sftp:
-                sftp.timeout = 30
+                sftp.timeout = 15
                 with sftp.cd(dirname):
                     sftp.put(localFilename, remotepath=targetFname)
 
