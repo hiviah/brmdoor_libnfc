@@ -66,7 +66,28 @@ reconnect_delay = 300
 #   fi
 #
 #   python -c "import wiringpi; wiringpi.wiringPiSetupGpio(); wiringpi.pinMode($PIN, wiringpi.INPUT); wiringpi.pullUpDnControl($PIN, wiringpi.PUD_UP)"
+#
+# SpaceAPI upload is to upload JSON-formatted status to a SFTP server where it can be hosted via web.
+#
+# spaceapi_status_upload = True/False whether to use SFTP upload
+# spaceapi_sftp_host = hostname where to upload the key
+# spaceapi_sftp_port = port of sftp server
+# spaceapi_sftp_username = username for the sftp server
+# spaceapi_sftp_key = full path to SFTP (SSH) key
+# spaceapi_dest_file = path relative to SFTP root, including final the filename (it's recommended to use chroot with internal-sftp)
+# spaceapi_template_file = full path to JSON template file, where status (open/closed) will be added
+#
+# Note: for sftp upload to work, you need to have the server in ~/.ssh/known_hosts, otherwise you'll get exception
+
 
 enabled = False
 status_file = /sys/class/gpio/gpio22/value
 open_value = 0
+spaceapi_status_upload = False
+spaceapi_sftp_host = some.fqdn.com
+spaceapi_sftp_port = 22
+spaceapi_sftp_username = brmdoor-web
+spaceapi_sftp_key = /path/to/key
+spaceapi_dest_filen= /path/on/target/host/to/dest/file
+spaceapi_template_file = /full/path/to/spaceapi_template.json
+

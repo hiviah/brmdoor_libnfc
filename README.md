@@ -34,11 +34,12 @@ You need just to run `make`. Additional dependencies:
 - [SWIG](http://www.swig.org/)
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
+- [pysftp](https://pypi.org/project/pysftp/) - for uploading SpaceAPI-formatted status to some host
 
 All dependencies can be installed on Ubuntu or Debian/Raspbian via:
 
     apt install libnfc-dev libfreefare-bin libfreefare-dev python-axolotl-curve25519 swig2.0 python-dev
-    pip install irc wiringpi2
+    pip install irc wiringpi2 pysftp
 
 To build, just run make:
 

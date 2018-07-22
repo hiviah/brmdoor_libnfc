@@ -71,6 +71,14 @@ class BrmdoorConfig(object):
         if self.useOpenSwitch:
             self.switchStatusFile = self.config.get("open_switch", "status_file")
             self.switchOpenValue = self.config.get("open_switch", "open_value")
+        self.useStatusUpload = self.config.getboolean("open_switch", "spaceapi_status_upload ")
+        if self.useStatusUpload:
+            self.sftpHost = self.config.get("open_switch", "spaceapi_sftp_host")
+            self.sftpPort= self.config.getint("open_switch", "spaceapi_sftp_port")
+            self.sftpUsername = self.config.get("open_switch", "spaceapi_sftp_username")
+            self.sftpKey = self.config.get("open_switch", "spaceapi_sftp_key")
+            self.sftpDestFile = self.config.get("open_switch", "spaceapi_sftp_key")
+            self.sftpTemplateFile = self.config.get("open_switch", "spaceapi_template_file")
 
     def convertLoglevel(self, levelString):
         """Converts string 'debug', 'info', etc. into corresponding
@@ -354,6 +362,14 @@ class IrcThread(threading.Thread):
             except Exception:
                 logging.exception("Exception in IRC thread")
             time.sleep(self.reconnectDelay)
+
+class SpaceAPIUploader(object):
+    """
+    Class for uploading JSON-formatted SpaceAPI status via SFTP
+    """
+
+    def __init__(self, config):
+        pass
 
 class OpenSwitchThread(threading.Thread):
     """
