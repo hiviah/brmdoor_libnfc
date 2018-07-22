@@ -413,12 +413,10 @@ class OpenSwitchThread(threading.Thread):
         self.statusFile = config.switchStatusFile
         self.openValue = config.switchOpenValue
         self.ircThread = ircThread
+        self.config = config
         threading.Thread.__init__(self)
 
     def run(self):
-        logging.info("Switch thread start")
-        if self.ircThread is None: #no point in running this thread if we can't report it anywhere
-            return
 
         lastStatus = None #Some random value so that first time it will be registered as change
         while True:
@@ -433,7 +431,18 @@ class OpenSwitchThread(threading.Thread):
                     else:
                         strStatus = "CLOSED |"
 
-                    if self.ircThread.connected:
+                    try:
+                        #this will upload status always upon brmdoor start, which is better than waiting until someone
+                        #changes status with button
+                        if self.config.useStatusUpload:
+                            uploader = SpaceAPIUploader(self.config)
+                            uploader.upload(status == self.openValue)
+                    except Exception:
+                        #we could use retrying with @retry decorator, but it's likely that it wouldn't help with
+                        #current connection/upload/out of disk space or similar problem
+                        logging.exception("Failed to upload spaceAPI status JSON")
+
+                    if self.ircThread is not None and self.ircThread.connected:
                         for channel in self.ircThread.channels:
                             logging.info("Request topic for channel %s with intention to change it, prefix %s",
                                          channel, strStatus)
