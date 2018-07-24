@@ -74,7 +74,7 @@ class BrmdoorConfig(object):
         if self.useOpenSwitch:
             self.switchStatusFile = self.config.get("open_switch", "status_file")
             self.switchOpenValue = self.config.get("open_switch", "open_value")
-        self.useStatusUpload = self.config.getboolean("open_switch", "spaceapi_status_upload ")
+        self.useStatusUpload = self.config.getboolean("open_switch", "spaceapi_status_upload")
         if self.useStatusUpload:
             self.sftpHost = self.config.get("open_switch", "spaceapi_sftp_host")
             self.sftpPort= self.config.getint("open_switch", "spaceapi_sftp_port")
@@ -386,7 +386,7 @@ class SpaceAPIUploader(object):
         dirname, targetFname = os.path.split(self.config.sftpDestFile)
 
         spaceApiJson = json.load(file("spaceapi_template.json"))
-        spaceApiJson["state"] = {"open": True, "lastchange": time.time()}
+        spaceApiJson["state"] = {"open": isOpen, "lastchange": time.time()}
 
         with tempfile.NamedTemporaryFile() as tf:
             json.dump(spaceApiJson, tf, indent=4, ensure_ascii=True, encoding='utf-8')
@@ -435,8 +435,11 @@ class OpenSwitchThread(threading.Thread):
                         #this will upload status always upon brmdoor start, which is better than waiting until someone
                         #changes status with button
                         if self.config.useStatusUpload:
+                            isOpen = (status == self.openValue)
                             uploader = SpaceAPIUploader(self.config)
-                            uploader.upload(status == self.openValue)
+                            logging.info("Going to upload spaceAPI status, opened: %s, status: %s", isOpen, status)
+                            uploader.upload(isOpen)
+                            logging.info("SpaceAPI json status upload finished")
                     except Exception:
                         #we could use retrying with @retry decorator, but it's likely that it wouldn't help with
                         #current connection/upload/out of disk space or similar problem
