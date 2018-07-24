@@ -31,10 +31,11 @@ You need just to run `make`. Additional dependencies:
 - [libnfc](https://github.com/nfc-tools/libnfc/releases), in Debian and Ubuntu as libnfc-dev
 - [libfreefare](https://github.com/nfc-tools/libfreefare), in Debian and Ubuntu install libfreefare-bin and libfreefare-dev
 - [python-axolotl-curve25519](https://github.com/tgalal/python-axolotl-curve25519), in Ubuntu and Debian install python-axolotl-curve25519
-- [SWIG](http://www.swig.org/)
+- [SWIG version 2](http://www.swig.org/) - to generate Python-C++ bindings, SWIG 3 is known to cause segfaults sometimes
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
 - [pysftp](https://pypi.org/project/pysftp/) - for uploading SpaceAPI-formatted status to some host
+  - optional runtime dependency, not needed unless you set SFTP SpaceAPI upload to true
 
 All dependencies can be installed on Ubuntu or Debian/Raspbian via:
 
