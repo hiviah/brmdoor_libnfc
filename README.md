@@ -168,3 +168,16 @@ See an [example of HCE NDEF emulation](https://github.com/TechBooster/C85-Androi
 
 You could just modify `write_signed_ndef_on_desfire.py` to write out the JSON into a file and then put the 
 generated NDEF file into application so it will respond with it when
+
+## Testing
+
+If you don't want to test it on Raspberry directly, it's possible to run on x86 with USB-based PN532, e.g. 
+[ACR 122U](https://www.acs.com.hk/en/products/3/acr122u-usb-nfc-reader/) or
+[ACR 122T](https://www.acs.com.hk/en/products/109/acr122t-usb-tokens-nfc-reader/).
+
+Open/close switch can be simulated by ordinary file, for unlocker you can use do-nothing `unlocker.Unlocker` class.
+Note that there are subtle differences in PN532 handling which we also discovered only by experience, notably that SPI
+version cannot do interrupts while the USB version can. This has the effect that it causes 100% CPU use on SPI version,
+because it actively polls, while it works on USB version without 100% CPU usage. This issue has been fixed in the past
+so that the SPI version doesn't consume 100% CPU by just waiting for card.
+
