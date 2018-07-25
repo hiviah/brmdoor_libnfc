@@ -1,4 +1,4 @@
-# Brmdoor via libnfc
+# Brmdoor via libnfc and libfreefare
 
 This is an access-control system implementation via contactless ISO 14443A cards
 and a PN53x-based reader. So you basically swipe your card, and if it's in
@@ -6,23 +6,27 @@ database, the door unlocks.
 
 Info about authorized users and their cards and keys is stored in sqlite database.
 
+It also supports physical *OPEN/CLOSE state* button for people to indicate if place is opened to public. The state can be reported via IRC topic
+and SFTP upload in [SpaceAPI.net format](http://spaceapi.net/documentation).
+
 This was originally designed for Raspberry (Raspbian), but it also runs on
-desktop PC if you have the PN532 USB reader.
+x86 if you have the PN532 USB reader.
 
-The daemon is implemented in `brmdoor_nfc_daemon.py`.
+The main daemon is implemented in `brmdoor_nfc_daemon.py`.
 
-## NFC smartcard API
+Exmple one place where it's used - https://brmlab.cz/project/brmdoor/start
 
-This project shows how to use libnfc from python to send APDUs to NFC
-smartcards. Have a look at `test_nfc.py` for some examples, currently it
-shows four interactions with NFC smartcards:
+The brmlab page also show electrical components and connection (Raspi and lock use different voltages). Any lock can be 
+used with `brmdoor_libnfc` as long as you can trigger it via GPIO. More secure locks (BERA-E/BERA-D with automatic lock
+and panic trigger) or a cheap electromagnetic lock.
 
-* read NDEF message from token (Mifare Desfire, Yubikey Neo)
-* do HMAC-SHA1 authenthication (Yubikey Neo)
-* read Track 2 Equivalent Data from Visa
-* execute signature for payment on Mastercard
+## Supported cards and authentication methods
 
-It is much more general in use than to use it as authenthicator to open door.
+* by UID of ISO-14443 card (Mifare Classic, Desfire, Ultralight...) - not safe since it's cloneable, but it's commonly used in comme
+* Yubikey Neo HMAC-SHA1 - most safe option, uncloneable
+* Mifare Desfire - Ed25519 signature of UID (currently no known clones available)
+
+Test code is also provided to get payment signature (cryptogram) from Visa and Mastercard, but it's not used.
 
 ## Building and dependencies
 
