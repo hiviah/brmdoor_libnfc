@@ -9,7 +9,7 @@ Info about authorized users and their cards and keys is stored in sqlite databas
 It also supports physical *OPEN/CLOSE state* button for people to indicate if place is opened to public. The state can be reported via IRC topic
 and SFTP upload in [SpaceAPI.net format](http://spaceapi.net/documentation).
 
-This was originally designed for Raspberry (Raspbian), but it also runs on
+This was originally designed for Raspberry (Raspbian), but it also runs on other distros on Rapi and
 x86 if you have the PN532 USB reader.
 
 The main daemon is implemented in `brmdoor_nfc_daemon.py`.
