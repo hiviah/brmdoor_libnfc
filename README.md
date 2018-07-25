@@ -136,10 +136,29 @@ A `/root/.screenrc` file that will run the daemon in detached screen:
     screen -t brmdoor 0 /root/brmdoor_libnfc/brmdoor_start.sh
 
 
+## Security considerations
+
+Using SFTP for upload of status should be used with "internal-sftp" setting. This chroots the upload user's directory,
+doesn't allow script or code execution. You need to chown the directory to root and make it not writable by non-root
+users (requirement for internal-sftp). E.g. make `brmdoor-web` (used for sftp upload) user part of `sftp` group and have
+  
+    Subsystem sftp internal-sftp
+
+    Match Group sftp
+       ChrootDirectory %h
+       ForceCommand internal-sftp
+       AllowTcpForwarding no
+
+For SFTP upload to work, target host needs to already to be in `~/.ssh/known_hosts` when making connection, otherwise
+you'll get an exception. Simply connect via command-line sftp before running, check and accept the fingeprint beforehand.
+
 ## Known bugs (TODO)
 
 * IRC disconnect is sometimes detected late, e.g. when trying to send message that door was open. This
   causes the message to be lost, but the reconnect will kick in
+* Freenode loses packets (RST) seeming silent connection to be still alive when they are not.
+* Periodic PING could theoretically solve this, but when I tried I got kicked out, so also you need to find the right
+  interval
   
 ## Notes
 
