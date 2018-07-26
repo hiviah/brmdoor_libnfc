@@ -24,7 +24,8 @@ and panic trigger) or a cheap electromagnetic lock.
 
 * by UID of ISO-14443 card (Mifare Classic, Desfire, Ultralight...) - not safe since it's cloneable, but it's commonly used in comme
 * Yubikey Neo HMAC-SHA1 - most safe option, uncloneable
-* Mifare Desfire - Ed25519 signature of UID (currently no known clones available)
+* Mifare Desfire - Ed25519 signature of UID (currently no known clones available; although some features could be cloned,
+  it's not enough for anyone to create such partial clones)
 
 Test code is also provided to get payment signature (cryptogram) from Visa and Mastercard, but it's not used.
 
