@@ -113,6 +113,22 @@ If you have `pcscd` running, it will take over the reader and you can't use it. 
 
 Similarly, you have to blacklist `pn533` and `pn533_usb` kernel modules (usually in a file like `/etc/modprobe.d/blacklist.conf`).
 
+## Photo of an actual installation
+
+![Raspberry with stepup](https://brmlab.cz/_media/project/brmdoor/brmlab_03.jpg?cache=&w=900&h=600&tok=bcf9ca)
+
+![Connection to PN532 reader](https://brmlab.cz/_media/project/brmdoor/brmlab_04.jpg?cache=&w=900&h=600&tok=575eb2)
+
+Security note: it's better to have reader behind door, but this door is metal (thus external or wormhole antenna needed). 
+Even though the reader is not connected directly to *open* PIN which could be triggered by applying power to it.
+
+There are two ways to do it:
+
+- Separate antenna connected to [external antenna PINs provided by Adafruit PN532 board](https://learn.adafruit.com/adafruit-pn532-rfid-nfc/downloads)
+  Antenna is quite difficult to tune (requires right LC circuit with proper coils and capacitors).
+- [Wormhole antenna](https://i.imgur.com/fclA2b2.jpg) - two coils connected with wire. It generally works, but is not
+  very reliable.
+
 ## Startup with systemd and GNU screen
 
 Example of startup unit for systemd, put in `/etc/systemd/system/brmdoor.service` and this repo cloned in `/root/brmdoor_libnfc`:
