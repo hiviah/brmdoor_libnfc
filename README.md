@@ -173,6 +173,9 @@ users (requirement for internal-sftp). E.g. make `brmdoor-web` (used for sftp up
 For SFTP upload to work, target host needs to already to be in `~/.ssh/known_hosts` when making connection, otherwise
 you'll get an exception. Simply connect via command-line sftp before running, check and accept the fingeprint beforehand.
 
+Also, as noted before, reader should be behind door. PIN to open door should be in no case accessible from outside the
+door (unbelievably I've seen some commercial systems designed like this).
+
 ## Known bugs (TODO)
 
 * IRC disconnect is sometimes detected late, e.g. when trying to send message that door was open. This
