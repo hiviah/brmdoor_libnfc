@@ -29,6 +29,16 @@ and panic trigger) or a cheap electromagnetic lock.
 
 Test code is also provided to get payment signature (cryptogram) from Visa and Mastercard, but it's not used.
 
+### Note on old libfreefare 0.4.x desfire timeouts/deadlocks
+
+Old libfreefare 0.4.x has infinite timeouts for desfire operations (and others).
+
+Fix can be made by replacing the timeout parameter in `nfc_initiator_transceive_bytes` calls in libfreefare sources.
+
+You need to rebuild the lib and reinstall it.
+
+Latest versions have finite timeout, which is also configurable.
+
 ## Building and dependencies
 
 You need just to run `make`. Additional dependencies:
