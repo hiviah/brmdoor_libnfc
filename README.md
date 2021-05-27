@@ -4,6 +4,9 @@ This is an access-control system implementation via contactless ISO 14443A cards
 and a PN53x-based reader. So you basically swipe your card, and if it's in
 database, the door unlocks.
 
+It's a bit old project, so requires python 2 (didn't have time for porting). At least currently
+(2010-05-28) still works on latest Raspberry 4 and Raspbian Buster.
+
 Info about authorized users and their cards and keys is stored in sqlite database.
 
 It also supports physical *OPEN/CLOSE state* button for people to indicate if place is opened to public. The state can be reported via IRC topic
@@ -29,6 +32,15 @@ and panic trigger) or a cheap electromagnetic lock.
 
 Test code is also provided to get payment signature (cryptogram) from Visa and Mastercard, but it's not used.
 
+## Enabling SPI
+
+Various Raspberry models have different ways of enabling SPI, but you need to do it for NFC reader to work.
+
+In latest Raspi 4B, you need to edit `/boot/config.txt` and add/uncomment line `dtparam=spi=on`, just loading
+kernel modules won't work.
+
+Older models needed some enabling in device tree. Cherries on top.
+
 ### Note on old libfreefare 0.4.x desfire timeouts/deadlocks
 
 Old libfreefare 0.4.x has infinite timeouts for desfire operations (and others).
@@ -39,6 +51,8 @@ You need to rebuild the lib and reinstall it.
 
 Latest versions have finite timeout, which is also configurable.
 
+TODO: still need to fix option for latest freefare libs
+
 ## Building and dependencies
 
 You need just to run `make`. Additional dependencies:
@@ -47,7 +61,7 @@ You need just to run `make`. Additional dependencies:
 - [libfreefare](https://github.com/nfc-tools/libfreefare), in Debian and Ubuntu install libfreefare-bin and libfreefare-dev
 - [python-axolotl-curve25519](https://github.com/tgalal/python-axolotl-curve25519), in Ubuntu and Debian install python-axolotl-curve25519
 - [SWIG version 2](http://www.swig.org/) - to generate Python-C++ bindings, SWIG 3 is known to cause segfaults sometimes
-- [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry)
+- [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry), install from pip, `pip install wiringpi`
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
 - [pysftp](https://pypi.org/project/pysftp/) - for uploading SpaceAPI-formatted status to some host
   - optional runtime dependency, not needed unless you set SFTP SpaceAPI upload to true

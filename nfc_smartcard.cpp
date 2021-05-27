@@ -7,6 +7,7 @@
 #include <nfc/nfc.h>
 #include <nfc/nfc-types.h>
 #include <freefare.h>
+#include <functional>
 
 #include "nfc_smartcard.h"
 
