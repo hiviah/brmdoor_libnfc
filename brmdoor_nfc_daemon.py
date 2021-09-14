@@ -11,6 +11,7 @@ import ssl
 import Queue
 import json
 import tempfile
+import irc.client
 
 from binascii import hexlify
 from functools import partial
@@ -59,7 +60,6 @@ class BrmdoorConfig(object):
         self.unlocker = self.config.get("brmdoor", "unlocker")
         self.useIRC = self.config.getboolean("irc", "enabled")
         if self.useIRC:
-            import irc.client
             self.ircServer = self.config.get("irc", "server")
             self.ircPort = self.config.getint("irc", "port")
             self.ircNick = self.config.get("irc", "nick")
