@@ -165,6 +165,10 @@ std::string NFCDevice::readDesfireNDEF() throw(NFCError)
     if (!tags) {
         throw NFCError("No tags detected");
     }
+    // freefare_get_tags() returns a NULL-terminated list of MifareTag
+    if (!*tags) {
+        throw NFCError("Empty array tag, bailing out");
+    }
     MifareTag& tag = *tags; //only first one is used
 
     if (DESFIRE != freefare_get_tag_type (tag)) {
