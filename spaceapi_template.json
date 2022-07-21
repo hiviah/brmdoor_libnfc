@@ -1,5 +1,6 @@
 {
   "api": "0.13",
+  "api_compatibility": ["14"],
   "space": "Brmlab",
   "logo": "https://brmlab.cz/brmlab.png",
   "url": "https://brmlab.cz/",
@@ -12,6 +13,10 @@
     "irc": "irc://irc.libera.chat/#brmlab",
     "phone": "+420 608 801 582",
     "facebook": "https://www.facebook.com/brmlab",
+    "twitter": "https://twitter.com/brmlab",
+    "issue_mail": "rada@brmlab.cz",
     "ml": "brmlab@brmlab.cz"
-  }
+  },
+  "issue_report_channels": ["issue_mail"],
+  "projects": [ "https://github.com/brmlab", "https://brmlab.cz/project/start" ]
 }
