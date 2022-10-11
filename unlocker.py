@@ -46,9 +46,9 @@ class UnlockerWiringPi(Unlocker):
         """Unlocks lock at configured pin by pulling it high.
         """
         import wiringpi
-        wiringpi.digitalWrite(self.lockPin, 0)
-        time.sleep(self.lockOpenedSecs)
         wiringpi.digitalWrite(self.lockPin, 1)
+        time.sleep(self.lockOpenedSecs)
+        wiringpi.digitalWrite(self.lockPin, 0)
 
     def lock(self):
         """
@@ -56,5 +56,5 @@ class UnlockerWiringPi(Unlocker):
         so that lock is not left disengaged.
         """
         import wiringpi
-        wiringpi.digitalWrite(self.lockPin, 1)
+        wiringpi.digitalWrite(self.lockPin, 0)
 
