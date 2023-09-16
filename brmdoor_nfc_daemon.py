@@ -382,21 +382,52 @@ class SpaceAPIUploader(object):
         :param isOpen - whether space is opened.
         :raises paramiko.ssh_exception.SSHException when upload fails (timeout, can't connect, host key mismatch...)
         """
-        import pysftp
+        import paramiko
         dirname, targetFname = os.path.split(self.config.sftpDestFile)
 
         spaceApiJson = json.load(file("spaceapi_template.json"))
         spaceApiJson["state"] = {"open": isOpen, "lastchange": time.time()}
 
         with tempfile.NamedTemporaryFile() as tf:
+            log_paramiko = logging.getLogger("paramiko")
+            if log_paramiko:
+                log_paramiko.setLevel(logging.WARNING)
+
             json.dump(spaceApiJson, tf, indent=4, ensure_ascii=True, encoding='utf-8')
             tf.flush()
             localFilename = tf.name
-            with pysftp.Connection(self.config.sftpHost, username=self.config.sftpUsername, port=self.config.sftpPort,
-                private_key=self.config.sftpKey) as sftp:
-                sftp.timeout = 15
-                with sftp.cd(dirname):
-                    sftp.put(localFilename, remotepath=targetFname)
+
+            pkey = None
+            ssh = None
+            sftp = None
+
+            for pkey_class in (paramiko.RSAKey, paramiko.DSSKey, paramiko.ECDSAKey, paramiko.Ed25519Key):
+                try:
+                    pkey = pkey_class.from_private_key_file(self.config.sftpKey)
+                    logging.debug("Loaded SSH key of type %s", pkey_class)
+                    break
+                except paramiko.ssh_exception.SSHException:
+                    pass
+
+            if pkey is None:
+                logging.error("Failed to load private SSH key", self.config.sftpKey)
+                raise paramiko.ssh_exception.SSHException("Can't read private SSH key")
+
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(self.config.sftpHost, username=self.config.sftpUsername, pkey=pkey, timeout=20)
+                sftp = ssh.open_sftp()
+
+                sftp.chdir(dirname)
+                sftp.put(localFilename, targetFname)
+
+            finally:
+                if sftp:
+                    sftp.close()
+
+                if ssh:
+                    ssh.close()
 
 
 class OpenSwitchThread(threading.Thread):

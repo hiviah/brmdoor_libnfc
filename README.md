@@ -4,8 +4,11 @@ This is an access-control system implementation via contactless ISO 14443A cards
 and a PN53x-based reader. So you basically swipe your card, and if it's in
 database, the door unlocks.
 
+We still run this at this day (2023-09-16) because porting to Python 3 and SWIG is
+not that simple, especially the SWIG part.
+
 It's a bit old project, so requires python 2 (didn't have time for porting). At least currently
-(2010-05-28) still works on latest Raspberry 4 and Raspbian Buster.
+(2023-09-16) still works on latest Raspberry 4 and Raspbian Buster.
 
 Info about authorized users and their cards and keys is stored in sqlite database.
 
@@ -29,6 +32,9 @@ and panic trigger) or a cheap electromagnetic lock.
 * Yubikey Neo HMAC-SHA1 - most safe option, uncloneable
 * Mifare Desfire - Ed25519 signature of UID (currently no known clones available; although some features could be cloned,
   it's not enough for anyone to create such partial clones)
+  * working Mifare Desfire clones are nowhere to be seen in 2023, even though
+    the datasheet was leaked loooong time ago (adding encryption wouldn't be so
+    hard with `libfreefare`)
 
 Test code is also provided to get payment signature (cryptogram) from Visa and Mastercard, but it's not used.
 
@@ -63,7 +69,7 @@ You need just to run `make`. Additional dependencies:
 - [SWIG version 2](http://www.swig.org/) - to generate Python-C++ bindings, SWIG 3 is known to cause segfaults sometimes
 - [WiringPi2 pythonic binding](https://github.com/WiringPi/WiringPi2-Python) (for switching lock on Raspberry), install from pip, `pip install wiringpi`
 - [python-irc](https://pypi.python.org/pypi/irc) >= 16.0, use "pip install irc", the one in repos is old
-- [pysftp](https://pypi.org/project/pysftp/) - for uploading SpaceAPI-formatted status to some host
+- [paramiko](https://pypi.org/project/paramiko/) - for uploading SpaceAPI-formatted status to some host
   - optional runtime dependency, not needed unless you set SFTP SpaceAPI upload to true
 
 All dependencies can be installed on Ubuntu or Debian/Raspbian via:
