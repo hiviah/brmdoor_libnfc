@@ -355,13 +355,18 @@ class IrcThread(threading.Thread):
                 # see https://github.com/jaraco/irc/issues/132
 
                 while self.getConnected():
-                    self.reactor.process_once(timeout=5)
                     try:
-                        with self.threadLock:
-                            msg = self.msgQueue.get_nowait()
-                            self.connection.privmsg_many(self.channels, msg)
-                    except Queue.Empty:
-                        pass
+                        self.reactor.process_once(timeout=5)
+                        try:
+                            with self.threadLock:
+                                msg = self.msgQueue.get_nowait()
+                                self.connection.privmsg_many(self.channels, msg)
+                        except Queue.Empty:
+                            pass
+                    except UnicodeDecodeError:
+                        logging.warn("Skipped incorrectly encoded message, cannot decode to UTF-8")
+                    except UnicodeEncodeError:
+                        logging.warn("We were sending badly encoded message? maybe via topic?")
             except Exception:
                 logging.exception("Exception in IRC thread")
             time.sleep(self.reconnectDelay)
