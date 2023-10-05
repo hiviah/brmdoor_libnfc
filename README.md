@@ -145,9 +145,11 @@ Similarly, you have to blacklist `pn533` and `pn533_usb` kernel modules (usually
 
 ## Photo of an actual installation
 
-![Raspberry with stepup](https://brmlab.cz/_media/project/brmdoor/brmlab_03.jpg?cache=&w=900&h=600&tok=bcf9ca)
+![Raspberry with stepup](Brmdoor_01_inside-door.jpg)
 
-![Connection to PN532 reader](https://brmlab.cz/_media/project/brmdoor/brmlab_04.jpg?cache=&w=900&h=600&tok=575eb2)
+![Connection to PN532 reader](Brmdoor_02_outside_reader.jpg)
+
+![Wiring through metal door outside](Brmdoor_03_outside_reader_wiring.jpg)
 
 Security note: it's better to have reader behind door, but this door is metal (thus external or wormhole antenna needed). 
 Even though the reader is not connected directly to *open* PIN which could be triggered by applying power to it.
